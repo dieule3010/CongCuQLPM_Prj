@@ -1,0 +1,39 @@
+<!-- Staff Tab -->
+<div id="staff-tab" class="tab-content">
+    <div class="bg-white rounded-lg shadow p-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Staff Management</h2>
+
+            <button onclick="openModal('addStaffModal')"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <i class="fas fa-plus mr-2"></i>Add Staff
+            </button>
+        </div>
+
+        <!-- Staff list -->
+        <div id="staffList" class="space-y-3">
+            {% for s in staff %}
+            <div class="bg-white border rounded-lg p-4 shadow-sm flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold">{{ s.name }}</h3>
+                    <p class="text-gray-600 text-sm">{{ s.position }}</p>
+                    <p class="text-gray-500 text-sm">{{ s.phone }}</p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                        Edit
+                    </button>
+                    <button class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                        Delete
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500">No staff found.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>

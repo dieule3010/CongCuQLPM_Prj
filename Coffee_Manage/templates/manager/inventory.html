@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Manager Dashboard - Coffee Shop{% endblock %}
+
+{% block content %}
+<!-- Inventory Tab -->
+        <div id="inventory-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Inventory Management</h2>
+                    <button onclick="openModal('addInventoryModal')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <i class="fas fa-plus mr-2"></i>Add Item
+                    </button>
+                </div>
+                <div id="inventoryMgmtList" class="space-y-3">
+                    <!-- Inventory will be loaded here -->
+                </div>
+            </div>
+        </div>
+{% endblock content %}

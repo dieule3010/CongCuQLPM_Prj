@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Manager Dashboard - Coffee Shop{% endblock %}
+
+{% block content %}
+<!-- Feedback Tab -->
+        <div id="feedback-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Customer Feedback</h2>
+                    <select id="feedbackFilter" class="px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="all">All Feedback</option>
+                        <option value="pending">Pending</option>
+                        <option value="responded">Responded</option>
+                    </select>
+                </div>
+                <div id="feedbackList" class="space-y-4">
+                    <!-- Feedback will be loaded here -->
+                </div>
+            </div>
+        </div>
+{% endblock content %}

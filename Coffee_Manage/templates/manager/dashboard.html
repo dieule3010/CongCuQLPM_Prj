@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Manager Dashboard - Coffee Shop{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-green-600 p-2 rounded-lg">
+                    <i class="fas fa-coffee text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-green-900">Manager Portal</h1>
+                    <p class="text-sm text-gray-600">Welcome, {{ user.name }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="badge badge-success">
+                    <i class="fas fa-user-tie mr-1"></i> Administrator
+                </span>
+                <a href="/logout" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="grid grid-cols-7 border-b overflow-x-auto">
+                <button class="tab-button tab-active px-4 py-4 text-sm font-medium whitespace-nowrap" data-tab="reports-tab" onclick="showTab('reports-tab')">
+                    <i class="fas fa-chart-bar mr-2"></i>Reports
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium whitespace-nowrap" data-tab="menu-tab" onclick="showTab('menu-tab')">
+                    <i class="fas fa-utensils mr-2"></i>Menu
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium whitespace-nowrap" data-tab="staff-tab" onclick="showTab('staff-tab')">
+                    <i class="fas fa-users mr-2"></i>Staff
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium whitespace-nowrap" data-tab="customers-tab" onclick="showTab('customers-tab')">
+                    <i class="fas fa-user-circle mr-2"></i>Customers
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium whitespace-nowrap" data-tab="feedback-tab" onclick="showTab('feedback-tab')">
+                    <i class="fas fa-comment mr-2"></i>Feedback
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium whitespace-nowrap" data-tab="inventory-tab" onclick="showTab('inventory-tab')">
+                    <i class="fas fa-boxes mr-2"></i>Inventory
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium whitespace-nowrap" data-tab="promotions-tab" onclick="showTab('promotions-tab')">
+                    <i class="fas fa-tag mr-2"></i>Promotions
+                </button>
+            </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="tab-content">
+            <div class="space-y-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">Today's Revenue</p>
+                            <i class="fas fa-dollar-sign text-green-600"></i>
+                        </div>
+                        <p id="todayRevenue" class="text-3xl font-bold text-green-600">$0</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">This Week</p>
+                            <i class="fas fa-calendar-week text-blue-600"></i>
+                        </div>
+                        <p id="weekRevenue" class="text-3xl font-bold text-blue-600">$0</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">This Month</p>
+                            <i class="fas fa-calendar-alt text-purple-600"></i>
+                        </div>
+                        <p id="monthRevenue" class="text-3xl font-bold text-purple-600">$0</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-600">Avg Order Value</p>
+                            <i class="fas fa-shopping-cart text-amber-600"></i>
+                        </div>
+                        <p id="avgOrder" class="text-3xl font-bold text-amber-600">$0</p>
+                    </div>
+                </div>
+
+                <!-- Revenue Chart -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Daily Revenue (Last 7 Days)</h2>
+                    <div id="revenueChart" class="h-64">
+                        <canvas id="chartCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% include "manager/menu.html" %}
+    {% include "manager/staff.html" %}
+    {% include "manager/customers.html" %}
+    {% include "manager/feedback.html" %}
+    {% include "manager/inventory.html" %}
+    {% include "manager/promotions.html" %}
+{% endblock %}
