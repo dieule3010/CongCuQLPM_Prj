@@ -1,20 +1,28 @@
-from django.shortcuts import render
-from . models import MenuItem, Staff, Customer, Feedback, InventoryItem, Promotion
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import MenuItem, Staff, Customer, Feedback, InventoryItem, Promotion
+from .forms import MenuItemForm, StaffForm, CustomerForm, FeedbackForm, InventoryForm, PromotionForm
 
 def dashboard(request):
+    menu_form = MenuItemForm()
+
+    # Xử lý form Menu POST
+    if request.method == "POST" and 'menu_submit' in request.POST:
+        menu_form = MenuItemForm(request.POST, request.FILES)
+        if menu_form.is_valid():
+            menu_form.save()
+        else:
+            print(menu_form.errors, flush=True)
+
     context = {
-        'menu_items': MenuItem.objects.all(),
-        'staff': Staff.objects.all(),
-        'customers': Customer.objects.all(),
-        'feedback': Feedback.objects.all(),
-        'inventory': InventoryItem.objects.all(),
-        'promotions': Promotion.objects.all(),
+        'menu_items': MenuItem.objects.all(),  # menu list luôn được gửi xuống
+        'menu_form': menu_form,
+        'staff_list': Staff.objects.all(),
+        'staff_form': StaffForm(),
+        'customer_list': Customer.objects.all(),
+        'customer_form': CustomerForm(),
     }
     return render(request, 'manager/dashboard.html', context)
 
-def menu_management(request):
-    items = MenuItem.objects.all()
-    return render(request, 'manager/menu.html', {'menu_items': items})
 
 def staff_management(request):
     staff = Staff.objects.all()

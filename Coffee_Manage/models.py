@@ -2,7 +2,7 @@ from django.db import models
 
 class MenuItem(models.Model):
   name = models.CharField(max_length=100)
-  image = models.URLField(blank=True)
+  image = models.ImageField(upload_to='menu_images/', blank=True)  # Lưu file vào media/menu_images
   category = models.CharField(max_length=100)
   price = models.DecimalField(max_digits=6, decimal_places=2)
 class Staff(models.Model):

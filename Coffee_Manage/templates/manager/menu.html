@@ -1,17 +1,28 @@
-<!-- menu.html -->
-<div id="menu-tab" class="tab-content hidden">
+<div id="menu-tab" class="tab-content {% if active_tab == 'menu' %}block{% else %}hidden{% endif %}">
     <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Menu Management</h2>
-            <button onclick="openModal('addMenuModal')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                <i class="fas fa-plus mr-2"></i>Add Item
-            </button>
+        <h2 class="text-2xl font-bold text-gray-900">Menu Management</h2>
+
+        <!-- Form -->
+        <div class="bg-gray-100 p-4 rounded-lg mb-6">
+            <h3 class="font-semibold text-lg mb-3">Add Menu Item</h3>
+            <form method="POST" enctype="multipart/form-data" action="{% url 'dashboard' %}">
+                {% csrf_token %}
+                {{ menu_form.as_p }}
+                <button type="submit" name="menu_submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                    Save Item
+                </button>
+            </form>
         </div>
+
+        <!-- Menu List -->
         <div id="menuList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {% for item in menu_items %}
-                <div class="p-4 border rounded">
-                    <h3 class="font-bold">{{ item.name }}</h3>
-                    <p>${{ item.price }}</p>
+                <div class="p-4 border rounded shadow">
+                    <h3 class="font-bold text-lg">{{ item.name }}</h3>
+                    <p class="text-gray-700">${{ item.price }}</p>
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" class="mt-2 rounded-lg w-full h-40 object-cover">
+                    {% endif %}
                 </div>
             {% empty %}
                 <p>No menu items yet.</p>
