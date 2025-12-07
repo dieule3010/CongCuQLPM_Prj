@@ -5,10 +5,10 @@ from Coffee_Manage import views
 
 urlpatterns = [
     path('', views.dashboard, name='dashboard'),
-    # path('menu/', views.menu_management, name='menu'),
-    path('staff/', views.staff_management, name='staff'),
-    path('customers/', views.customer_management, name='customers'),
-    path('feedback/', views.feedback_management, name='feedback'),
-    path('inventory/', views.inventory_management, name='inventory'),
-    path('promotions/', views.promotions_management, name='promotions'),
+    path('staff-delete/', views.staff_delete, name='staff_delete'),
+    path('staff-add/', views.staff_add, name='staff_add'),
+    path('menu-add/', views.menu_add, name='menu_add'),
+    path('menu-delete/', views.menu_delete, name='menu_delete'),
+    path('feedback_reply/', views.feedback_reply, name='feedback_reply'),
+    path('feedback_delete/', views.feedback_delete, name='feedback_delete'),
 ]

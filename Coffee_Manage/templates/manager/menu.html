@@ -2,13 +2,14 @@
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-2xl font-bold text-gray-900">Menu Management</h2>
 
-        <!-- Form -->
+        <!-- Form Add Menu -->
         <div class="bg-gray-100 p-4 rounded-lg mb-6">
             <h3 class="font-semibold text-lg mb-3">Add Menu Item</h3>
-            <form method="POST" enctype="multipart/form-data" action="{% url 'dashboard' %}">
+            <form id="menuForm" enctype="multipart/form-data">
                 {% csrf_token %}
+                <input type="hidden" name="active_tab" value="menu">
                 {{ menu_form.as_p }}
-                <button type="submit" name="menu_submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                <button type="submit" class="add-menu-btn px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
                     Save Item
                 </button>
             </form>
@@ -17,16 +18,84 @@
         <!-- Menu List -->
         <div id="menuList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {% for item in menu_items %}
-                <div class="p-4 border rounded shadow">
-                    <h3 class="font-bold text-lg">{{ item.name }}</h3>
-                    <p class="text-gray-700">${{ item.price }}</p>
-                    {% if item.image %}
-                        <img src="{{ item.image.url }}" class="mt-2 rounded-lg w-full h-40 object-cover">
-                    {% endif %}
-                </div>
+            <div class="menu-item p-4 border rounded shadow" id="menu-{{ item.id }}">
+                <h3 class="font-bold text-lg">{{ item.name }}</h3>
+                <p class="text-gray-700">${{ item.price }}</p>
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" class="mt-2 rounded-lg w-full h-40 object-cover">
+                {% endif %}
+                <button class="delete-menu-btn mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                        data-menu-id="{{ item.id }}">
+                    Delete
+                </button>
+            </div>
             {% empty %}
                 <p>No menu items yet.</p>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+const csrftoken = '{{ csrf_token }}';
+
+// Delete menu
+document.querySelectorAll('.delete-menu-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const menuId = btn.dataset.menuId;
+        if (!confirm("Are you sure you want to delete this menu item?")) return;
+
+        fetch("{% url 'menu_delete' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrftoken,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `menu_id=${menuId}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                document.getElementById(`menu-${menuId}`).remove();
+            } else {
+                alert("Delete failed: " + (data.error || ""));
+            }
+        })
+        .catch(err => console.log(err));
+    });
+});
+
+// Add menu via AJAX
+document.getElementById('menuForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    fetch("{% url 'menu_add' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrftoken
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            const menu = data.menu;
+            const menuDiv = document.createElement('div');
+            menuDiv.className = 'menu-item p-4 border rounded shadow';
+            menuDiv.id = `menu-${menu.id}`;
+            menuDiv.innerHTML = `
+                <h3 class="font-bold text-lg">${menu.name}</h3>
+                <p class="text-gray-700">$${menu.price}</p>
+                ${menu.image ? `<img src="${menu.image}" class="mt-2 rounded-lg w-full h-40 object-cover">` : ''}
+                <button class="delete-menu-btn mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                    data-menu-id="${menu.id}">Delete</button>
+            `;
+            document.getElementById('menuList').appendChild(menuDiv);
+        } else {
+            alert("Add failed: " + JSON.stringify(data.errors));
+        }
+    })
+    .catch(err => console.log(err));
+});
+</script>

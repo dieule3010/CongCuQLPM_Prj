@@ -1,31 +1,28 @@
-<!-- Staff Tab -->
-<div id="staff-tab" class="tab-content">
+<div id="staff-tab" class="tab-content {% if active_tab == 'staff-tab' %}block{% else %}hidden{% endif %}">
     <div class="bg-white rounded-lg shadow p-6">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Staff Management</h2>
 
-            <button onclick="openModal('addStaffModal')"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                <i class="fas fa-plus mr-2"></i>Add Staff
+        <!-- Form thêm staff -->
+        <form id="staffForm">
+            {% csrf_token %}
+            <input type="hidden" name="active_tab" value="staff">
+            {{ staff_form.as_p }}
+            <button type="button" id="addStaffBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                Add Staff
             </button>
-        </div>
+        </form>
 
         <!-- Staff list -->
-        <div id="staffList" class="space-y-3">
-            {% for s in staff %}
-            <div class="bg-white border rounded-lg p-4 shadow-sm flex justify-between items-center">
+        <div id="staffList" class="space-y-3 mt-4">
+            {% for s in staff_list %}
+            <div class="staff-item bg-white border rounded-lg p-4 shadow-sm flex justify-between items-center" id="staff-{{ s.id }}">
                 <div>
                     <h3 class="text-lg font-bold">{{ s.name }}</h3>
-                    <p class="text-gray-600 text-sm">{{ s.position }}</p>
-                    <p class="text-gray-500 text-sm">{{ s.phone }}</p>
+                    <p class="text-gray-600 text-sm">{{ s.role }}</p>
+                    <p class="text-gray-500 text-sm">{{ s.email }}</p>
                 </div>
-
                 <div class="flex gap-3">
-                    <button class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                        Edit
-                    </button>
-                    <button class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                    <button class="delete-btn px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                        data-staff-id="{{ s.id }}">
                         Delete
                     </button>
                 </div>
@@ -37,3 +34,72 @@
 
     </div>
 </div>
+
+<script>
+const csrftoken = '{{ csrf_token }}';
+
+// Delete staff
+function bindDeleteButtons() {
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const staffId = btn.dataset.staffId;
+            if(!confirm("Are you sure?")) return;
+
+            fetch("{% url 'staff_delete' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrftoken,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: `staff_id=${staffId}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    document.getElementById(`staff-${staffId}`).remove();
+                } else {
+                    alert("Delete failed: " + (data.error || ""));
+                }
+            });
+        });
+    });
+}
+bindDeleteButtons();
+
+// Add staff
+document.getElementById('addStaffBtn').addEventListener('click', () => {
+    const form = document.getElementById('staffForm');
+    const formData = new FormData(form);
+
+    fetch("{% url 'staff_add' %}", {
+        method: "POST",
+        headers: {"X-CSRFToken": csrftoken},
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            const staff = data.staff;
+            const div = document.createElement('div');
+            div.className = 'staff-item bg-white border rounded-lg p-4 shadow-sm flex justify-between items-center';
+            div.id = `staff-${staff.id}`;
+            div.innerHTML = `
+                <div>
+                    <h3 class="text-lg font-bold">${staff.name}</h3>
+                    <p class="text-gray-600 text-sm">${staff.role}</p>
+                    <p class="text-gray-500 text-sm">${staff.email}</p>
+                </div>
+                <div class="flex gap-3">
+                    <button class="delete-btn px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                        data-staff-id="${staff.id}">Delete</button>
+                </div>
+            `;
+            document.getElementById('staffList').appendChild(div);
+            bindDeleteButtons(); // bind lại delete button mới
+            form.reset();
+        } else {
+            alert("Add failed: " + (data.error || ""));
+        }
+    });
+});
+</script>
