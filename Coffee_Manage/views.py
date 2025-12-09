@@ -2,11 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import MenuItem, Staff, Customer, Feedback, InventoryItem, Promotion
 from .forms import MenuItemForm, StaffForm, CustomerForm, FeedbackForm, InventoryForm, PromotionForm
 from django.http import JsonResponse
-
+from django.db.models import Sum, Count, F
+from django.db.models.functions import Coalesce
+from django.utils import timezone
+from datetime import timedelta
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import MenuItem, Staff
+from .models import MenuItem, Staff, Order, OrderItem
 from .forms import MenuItemForm, StaffForm
+import json
 
 def dashboard(request):
     context = {
@@ -94,3 +98,58 @@ def feedback_delete(request):
             return JsonResponse({"success": True})
         return JsonResponse({"success": False, "error": "Invalid feedback ID"})
     return JsonResponse({"success": False, "error": "Invalid request"})
+def report_revenue(request):
+    if request.method != "GET":
+        return JsonResponse({"success": False, "error": "Invalid request"})
+
+    try:
+        # Lấy top 5 món bán chạy
+        top_items = (
+            OrderItem.objects
+            .values("menu_item__name")
+            .annotate(total_sold=Coalesce(Sum("quantity"), 0))
+            .order_by("-total_sold")[:5]
+        )
+
+        # Chuẩn bị dữ liệu cho Chart.js
+        labels = [item["menu_item__name"] for item in top_items]
+        sold = [item["total_sold"] for item in top_items]
+
+        # Thống kê doanh thu
+        today = timezone.now().date()
+        month_start = today.replace(day=1)
+
+        revenue_today = (
+            Order.objects
+            .filter(created_at__date=today)
+            .aggregate(total=Coalesce(Sum("total_price"), 0))
+            .get("total")
+        )
+        revenue_month = (
+            Order.objects
+            .filter(created_at__date__gte=month_start)
+            .aggregate(total=Coalesce(Sum("total_price"), 0))
+            .get("total")
+        )
+        avg_order = (
+            Order.objects
+            .aggregate(avg=Coalesce(Sum("total_price") / Count("id"), 0))
+            .get("avg")
+        )
+        context = {
+            "top_items": top_items,
+
+            # JSON Chart.js
+            "labels_json": json.dumps(labels),
+            "sold_json": json.dumps(sold),
+
+            # Revenue statistics
+            "revenue_today": revenue_today,
+            "revenue_month": revenue_month,
+            "avg_order": avg_order,
+            "active_tab": "revenue_report"
+        }
+        return render(request, "manager/revenue_report.html", context)
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})

@@ -39,4 +39,14 @@ class Promotion(models.Model):
     status = models.CharField(max_length=20, default='active')
     startDate = models.DateField(null=True, blank=True)
     endDate = models.DateField(null=True, blank=True)
+class Order(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
+    staff = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
 

@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block content %}
+        <!-- Header-->
+        <header class="bg-dark py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bolder">Shopping Cart</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">View Your Cart...</p>
+                </div>
+            </div>
+        </header>
+        <div class="container">
+            {% if cart_products %}
+            {%for product in cart_products %}
+            <div class="card mb-3">
+                <div class="row g-0">
+                  <div class="col-md-4">
+                    <img src="{{product.image.url}}" class="img-fluid rounded-start" alt="...">
+                  </div>
+                  <div class="col-md-8">
+                    <center class="card-body">
+                      <h5 class="card-title">{{product.name}}</h5>
+                      <p class="card-text">{{product.description}}</p>
+                      {% if product.is_sale %}
+                      <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+          <!--
+                            <div class="col mb-5">
+                                <div class="card h-100"> -->
+                                    <!-- <div class="badge bg-light text-black position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div> -->
+
+                                    <!-- Product image-->
+                                    <!-- <img class="card-img-top" src="{{product.image.url}}" alt="..." /> -->
+                                    <!-- Product details-->
+                                    <div class="card-body p-4">
+                                        <br class="text-center">
+                                            <!-- Product name-->
+                                            <!-- <h5 class="fw-bolder">Fancy Product {{ product.name }}</h5> -->
+                                            <!--Sale-->
+                                            <div class="d-flex justify-content-center small text-warning mb-2">
+                                                <div class="bi-star-fill"></div>
+                                                &nbsp;&nbsp;Sale!&nbsp;&nbsp;
+                                                <div class="bi-star-fill">
+                                                </div>
+                                            </div>
+                                            <!-- Product price-->
+                                            <s>${{ product.price }}</s>
+                                            &nbsp;
+                                            {{ product.sale_price}}
+                        {% else %}
+                      ${{ product.price }}
+                      <br/> ID: {{ product.id }}
+                      {% endif %}
+                      <br></br>
+                      <div class="row-justify-content-center">
+                        <div class="col-md-2">Quantity:</div>
+                        <div class="col-md-2">
+                      <select class="form-select form-select-sm" id="select{{product.id}}">
+                        {% for key, value in quantities.items %}
+                          {% if key == product.id|slugify %}
+                            <option selected>{{ value }}
+                              {% endif %}
+                        {% endfor %}
+                            </option>
+
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                      </select>
+                    </div>
+                  </div>
+                      <br></br>
+                      <a href="{%url 'home'%}" class="btn btn-secondary">Home</a>
+                      <button type = "button" data-index="{{product.id}}" class = "btn btn-secondary update-cart">Update</button>
+                      <button type = "button" data-index="{{product.id}}" class = "btn btn-danger delete-product">Remove</button>
+
+                    </center>
+                    </div>
+                  </div>
+                </div>
+              <br/>
+            {% endfor %}
+            <div align="right">
+            <h3>Total: {{ totals }}</h3>
+            <a href="{% url 'checkout' %}" class="btn btn-success">Check Out</a>
+            </div>
+            <br></br><br></br>
+        {% else %}
+        <br></br>
+        There's nothing in your cart...
+        <br></br><br></br><br></br><br></br><br></br><br></br><br></br><br></br>
+        {% endif %}
+      </div>
+
+
+<script>
+  //Update Cart
+  $(document).on('click', '.update-cart', function(e){
+    e.preventDefault(); // Ngăn chặn hành động mặc định của sự kiện click
+    // grab the product id
+    var productid = $(this).data('index');
+    $.ajax({
+      type: 'POST', // Phương thức gửi yêu cầu là POST
+      url: "{% url 'cart_update' %}", // URL mà yêu cầu sẽ được gửi đến (đây là một biến template trong Django)
+      data: {
+        product_id: $(this).data('index'), // Dữ liệu được gửi đi, ở đây là giá trị của phần tử có id 'add-cart'
+        product_qty: $('#select'+ productid + ' option:selected').text(),
+        csrfmiddlewaretoken: '{{ csrf_token }}', // Token CSRF để bảo mật (được lấy từ template Django)
+        action: 'post' // Thông tin thêm để chỉ định hành động là 'post'
+    },
+        success: function(json){ // Hàm sẽ được gọi khi yêu cầu thành công
+            // console.log(json) // In ra console dữ liệu JSON trả về
+            document.getElementById("cart_quantity").
+            textContent = json.qty;
+            location.reload();
+          },
+        error: function(xhr, errmsg, err){ // Hàm sẽ được gọi khi có lỗi xảy ra
+        }
+    });
+});
+
+//Delete Item From Cart
+$(document).on('click', '.delete-product', function(e){
+    e.preventDefault(); // Ngăn chặn hành động mặc định của sự kiện click
+    // grab the product id
+    //var productid = $(this).data('index');
+    $.ajax({
+      type: 'POST', // Phương thức gửi yêu cầu là POST
+      url: "{% url 'cart_delete' %}", // URL mà yêu cầu sẽ được gửi đến (đây là một biến template trong Django)
+      data: {
+        product_id: $(this).data('index'), // Gửi ID sản phẩm
+        csrfmiddlewaretoken: '{{ csrf_token }}', // Token CSRF để bảo mật (được lấy từ template Django)
+        action: 'post' // Thông tin thêm để chỉ định hành động là 'post'
+    },
+        success: function(json){ // Hàm sẽ được gọi khi yêu cầu thành công
+            // console.log(json) // In ra console dữ liệu JSON trả về
+            // document.getElementById("cart_quantity").
+            // textContent = json.qty;
+            location.reload();// Tải lại trang để cập nhật giỏ hàng
+          },
+        error: function(xhr, errmsg, err){ // Hàm sẽ được gọi khi có lỗi xảy ra
+        }
+    });
+});
+</script>
+{% endblock %}

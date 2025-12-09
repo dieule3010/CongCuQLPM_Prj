@@ -11,4 +11,5 @@ urlpatterns = [
     path('menu-delete/', views.menu_delete, name='menu_delete'),
     path('feedback_reply/', views.feedback_reply, name='feedback_reply'),
     path('feedback_delete/', views.feedback_delete, name='feedback_delete'),
+    path('revenue/', views.report_revenue, name='report_revenue'),
 ]

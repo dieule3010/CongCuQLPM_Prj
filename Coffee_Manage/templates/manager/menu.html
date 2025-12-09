@@ -1,101 +1,146 @@
-<div id="menu-tab" class="tab-content {% if active_tab == 'menu' %}block{% else %}hidden{% endif %}">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-2xl font-bold text-gray-900">Menu Management</h2>
+{% load static %}
 
-        <!-- Form Add Menu -->
-        <div class="bg-gray-100 p-4 rounded-lg mb-6">
-            <h3 class="font-semibold text-lg mb-3">Add Menu Item</h3>
-            <form id="menuForm" enctype="multipart/form-data">
+<div id="menu-tab" class="tab-content {% if active_tab == 'menu' %}block{% else %}hidden{% endif %}">
+    <div class="bg-white rounded-xl shadow-lg p-7 border border-gray-200">
+
+        <!-- Title -->
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-gray-900 tracking-tight">🍽 Menu Management</h2>
+        </div>
+
+        <!-- Add Menu Form -->
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200 shadow-sm mb-8">
+            <h3 class="font-semibold text-xl mb-4 text-gray-800">➕ Add New Menu Item</h3>
+
+            <form id="menuForm" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
-                <input type="hidden" name="active_tab" value="menu">
                 {{ menu_form.as_p }}
-                <button type="submit" class="add-menu-btn px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                    Save Item
+
+                <button
+                    type="submit"
+                    class="add-menu-btn px-5 py-2 bg-green-600 text-white rounded-lg shadow-md
+                           transition-all hover:bg-green-700 hover:shadow-lg active:scale-95">
+                    💾 Save Item
                 </button>
             </form>
         </div>
 
-        <!-- Menu List -->
-        <div id="menuList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Menu Grid -->
+        <div id="menuList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for item in menu_items %}
-            <div class="menu-item p-4 border rounded shadow" id="menu-{{ item.id }}">
-                <h3 class="font-bold text-lg">{{ item.name }}</h3>
-                <p class="text-gray-700">${{ item.price }}</p>
+            <div class="menu-card bg-white p-5 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition-all"
+                 id="menu-{{ item.id }}">
+
                 {% if item.image %}
-                    <img src="{{ item.image.url }}" class="mt-2 rounded-lg w-full h-40 object-cover">
+                <img src="{{ item.image.url }}"
+                     class="rounded-xl w-full h-44 object-cover shadow-sm mb-3">
                 {% endif %}
-                <button class="delete-menu-btn mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                        data-menu-id="{{ item.id }}">
-                    Delete
+
+                <h3 class="text-xl font-bold text-gray-900">{{ item.name }}</h3>
+                <p class="text-green-700 font-semibold text-lg mt-1">$ {{ item.price }}</p>
+
+                <button
+                    class="delete-menu-btn mt-4 px-4 py-2 bg-red-600 text-white text-sm rounded-lg
+                           hover:bg-red-700 shadow transition active:scale-95"
+                    data-menu-id="{{ item.id }}">
+                    🗑 Delete
                 </button>
             </div>
             {% empty %}
-                <p>No menu items yet.</p>
+            <p class="text-gray-500">No menu items yet.</p>
             {% endfor %}
         </div>
     </div>
 </div>
 
+
 <script>
-const csrftoken = '{{ csrf_token }}';
+document.addEventListener("DOMContentLoaded", () => {
 
-// Delete menu
-document.querySelectorAll('.delete-menu-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const menuId = btn.dataset.menuId;
-        if (!confirm("Are you sure you want to delete this menu item?")) return;
+    const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
-        fetch("{% url 'menu_delete' %}", {
+    // ===============================
+    // DELETE MENU ITEM
+    // ===============================
+    function attachDeleteEvents() {
+        document.querySelectorAll(".delete-menu-btn").forEach(btn => {
+            btn.onclick = () => {
+                const menuId = btn.dataset.menuId;
+                if (!confirm("Are you sure you want to delete this menu item?")) return;
+
+                fetch("/menu-delete/", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": csrftoken,
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: `menu_id=${menuId}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`menu-${menuId}`).classList.add("scale-90", "opacity-0");
+                        setTimeout(() => {
+                            document.getElementById(`menu-${menuId}`).remove();
+                        }, 200);
+                    } else {
+                        alert("Delete failed!");
+                    }
+                });
+            };
+        });
+    }
+
+    attachDeleteEvents();
+
+
+    // ===============================
+    // ADD MENU ITEM
+    // ===============================
+    const menuForm = document.getElementById("menuForm");
+
+    menuForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        let formData = new FormData(menuForm);
+
+        fetch("/menu-add/", {
             method: "POST",
-            headers: {
-                "X-CSRFToken": csrftoken,
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: `menu_id=${menuId}`
+            headers: { "X-CSRFToken": csrftoken },
+            body: formData
         })
         .then(res => res.json())
         .then(data => {
-            if(data.success){
-                document.getElementById(`menu-${menuId}`).remove();
-            } else {
-                alert("Delete failed: " + (data.error || ""));
+            if (!data.success) {
+                alert("Add failed!");
+                return;
             }
-        })
-        .catch(err => console.log(err));
-    });
-});
 
-// Add menu via AJAX
-document.getElementById('menuForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const formData = new FormData(this);
+            const m = data.menu;
 
-    fetch("{% url 'menu_add' %}", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": csrftoken
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success){
-            const menu = data.menu;
-            const menuDiv = document.createElement('div');
-            menuDiv.className = 'menu-item p-4 border rounded shadow';
-            menuDiv.id = `menu-${menu.id}`;
-            menuDiv.innerHTML = `
-                <h3 class="font-bold text-lg">${menu.name}</h3>
-                <p class="text-gray-700">$${menu.price}</p>
-                ${menu.image ? `<img src="${menu.image}" class="mt-2 rounded-lg w-full h-40 object-cover">` : ''}
-                <button class="delete-menu-btn mt-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                    data-menu-id="${menu.id}">Delete</button>
+            let div = document.createElement("div");
+            div.className =
+                "menu-card bg-white p-5 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition-all";
+            div.id = `menu-${m.id}`;
+
+            div.innerHTML = `
+                ${m.image_url ? `<img src="${m.image_url}" class="rounded-xl w-full h-44 object-cover shadow-sm mb-3">` : ""}
+                <h3 class="text-xl font-bold text-gray-900">${m.name}</h3>
+                <p class="text-green-700 font-semibold text-lg mt-1">$ ${m.price}</p>
+                <button
+                    class="delete-menu-btn mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow">
+                    🗑 Delete
+                </button>
             `;
-            document.getElementById('menuList').appendChild(menuDiv);
-        } else {
-            alert("Add failed: " + JSON.stringify(data.errors));
-        }
-    })
-    .catch(err => console.log(err));
+
+            document.getElementById("menuList").appendChild(div);
+
+            // animation
+            div.classList.add("scale-75", "opacity-0");
+            setTimeout(() => div.classList.remove("scale-75", "opacity-0"), 50);
+
+            // rebind events
+            attachDeleteEvents();
+        });
+    });
 });
 </script>

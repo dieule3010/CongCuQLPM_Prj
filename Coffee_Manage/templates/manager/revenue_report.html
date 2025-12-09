@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div id="menu-tab" class="tab-content {% if active_tab == 'revenue_report' %}block{% else %}hidden{% endif %}">
+    <!-- SUMMARY CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white p-5 rounded-xl shadow">
+            <h3 class="text-gray-500 text-sm">Revenue Today</h3>
+            <p class="text-2xl font-bold text-green-600">${{ revenue_today }}</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow">
+            <h3 class="text-gray-500 text-sm">Revenue (Last 30 Days)</h3>
+            <p class="text-2xl font-bold text-blue-600">${{ revenue_month }}</p>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow">
+            <h3 class="text-gray-500 text-sm">Average per Order</h3>
+            <p class="text-2xl font-bold text-purple-600">${{ avg_order }}</p>
+        </div>
+    </div>
+
+    <!-- TOP ITEMS SECTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- TABLE -->
+        <div class="bg-white p-5 rounded-xl shadow">
+            <h2 class="text-xl font-bold mb-4">Top Selling Items</h2>
+
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b bg-gray-100">
+                        <th class="py-2 px-3">Item</th>
+                        <th class="py-2 px-3 text-center">Sold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in top_items %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-2 px-3">{{ item.menu_item__name }}</td>
+                        <td class="py-2 px-3 text-center font-semibold">{{ item.total_sold }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center py-4">No data</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CHART -->
+        <div class="bg-white p-5 rounded-xl shadow">
+            <h2 class="text-xl font-bold mb-4">Top Items Chart</h2>
+            <canvas id="topItemsChart" height="200"></canvas>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // 🔥 LẤY DATA TỪ VIEW (Không còn lỗi cú pháp)
+    const labels = JSON.parse('{{ labels_json|safe }}');
+    const soldData = JSON.parse('{{ sold_json|safe }}');
+
+    const ctx = document.getElementById('topItemsChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Units Sold",
+                data: soldData,
+                borderWidth: 2,
+                backgroundColor: "rgba(99, 102, 241, 0.5)",
+                borderColor: "rgb(99, 102, 241)",
+                borderRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

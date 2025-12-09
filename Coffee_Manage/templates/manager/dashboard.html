@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Manager Dashboard - Coffee Shop{% endblock %}
 
@@ -107,20 +108,6 @@
     {% include "manager/feedback.html" %}
     {% include "manager/inventory.html" %}
     {% include "manager/promotions.html" %}
+    {% include "manager/revenue_report.html" %}
 {% endblock %}
-<script>
-// // Khi click tab → lưu id tab vào localStorage
-// document.querySelectorAll('.tab-button').forEach(btn => {
-//     btn.addEventListener('click', function() {
-//         localStorage.setItem("active_tab", this.dataset.tab);
-//     });
-// });
-
-// // Khi reload → mở lại tab đã lưu
-// document.addEventListener("DOMContentLoaded", function() {
-//     let activeTab = localStorage.getItem("active_tab");
-//     if (activeTab) {
-//         showTab(activeTab);
-//     }
-// });
-// </script>
+<script src="{% static 'js/dashboard.js' %}"></script>
