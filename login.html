@@ -10,62 +10,61 @@
                 <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-600 rounded-full mb-4">
                     <i class="fas fa-coffee text-white text-2xl"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-900 mb-2">Coffee Shop</h1>
-                <p class="text-gray-600">Management System</p>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Quán Cà Phê</h1>
+                <p class="text-gray-600">Hệ Thống Quản Lý</p>
             </div>
 
-            <form id="loginForm" class="space-y-6">
-                <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"></div>
-                
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-lg">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <p id="errorText" class="font-medium"></p>
+                </div>
+            </div>
+
+            <form class="space-y-6" id="loginForm">
                 <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
-                    </label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        placeholder="Enter your email"
-                    >
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="email">Email</label>
+                    <input class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition" id="email" name="email" type="email" required placeholder="email@example.com">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="password">Mật khẩu</label>
+                    <input class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent transition" id="password" name="password" type="password" required placeholder="••••••••">
                 </div>
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        Password
-                    </label>
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        placeholder="Enter your password"
-                    >
+                <!-- Forgot Password Link -->
+                <div class="text-right">
+                    <a class="text-sm text-amber-600 hover:text-amber-700 font-medium" href="/forgot-password">
+                        Quên mật khẩu?
+                    </a>
                 </div>
 
-                <button 
-                    type="submit" 
-                    class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                >
-                    Sign In
+                <button class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium" type="submit">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Đăng Nhập
                 </button>
             </form>
 
+            <!-- Register Link -->
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    Chưa có tài khoản? 
+                    <a class="text-amber-600 hover:text-amber-700 font-semibold" href="/register">Đăng ký ngay</a>
+                </p>
+            </div>
+
             <div class="mt-8 pt-6 border-t border-gray-200">
-                <p class="text-sm text-gray-600 text-center mb-4">Demo Credentials:</p>
+                <p class="text-sm text-gray-600 text-center mb-4">Tài khoản demo:</p>
                 <div class="space-y-2 text-xs">
                     <div class="bg-purple-50 p-3 rounded-lg">
-                        <p class="font-medium text-purple-900 mb-1"><i class="fas fa-user mr-2"></i>Customer</p>
+                        <p class="font-medium text-purple-900 mb-1"><i class="fas fa-user mr-2"></i>Khách hàng</p>
                         <p class="text-gray-700">customer@demo.com / customer123</p>
                     </div>
                     <div class="bg-blue-50 p-3 rounded-lg">
-                        <p class="font-medium text-blue-900 mb-1"><i class="fas fa-briefcase mr-2"></i>Staff</p>
+                        <p class="font-medium text-blue-900 mb-1"><i class="fas fa-briefcase mr-2"></i>Nhân viên</p>
                         <p class="text-gray-700">staff@demo.com / staff123</p>
                     </div>
                     <div class="bg-green-50 p-3 rounded-lg">
-                        <p class="font-medium text-green-900 mb-1"><i class="fas fa-user-tie mr-2"></i>Manager</p>
+                        <p class="font-medium text-green-900 mb-1"><i class="fas fa-user-tie mr-2"></i>Quản lý</p>
                         <p class="text-gray-700">manager@demo.com / manager123</p>
                     </div>
                 </div>
@@ -80,12 +79,18 @@
         
         const formData = new FormData(this);
         const errorMessage = $('#errorMessage');
+        const errorText = $('#errorText');
         errorMessage.addClass('hidden');
+        
+        // Clear previous error styling
+        $('#email').removeClass('border-red-500');
+        $('#password').removeClass('border-red-500');
         
         try {
             const response = await fetch('/login', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: "include"
             });
             
             const data = await response.json();
@@ -93,11 +98,21 @@
             if (data.success) {
                 window.location.href = '/' + data.role;
             } else {
-                errorMessage.text(data.message || 'Invalid credentials').removeClass('hidden');
+                errorText.text(data.message || 'Thông tin đăng nhập không đúng');
+                errorMessage.removeClass('hidden');
+                
+                // Highlight error fields
+                if (data.message.includes('Email')) {
+                    $('#email').addClass('border-red-500');
+                } else if (data.message.includes('Mật khẩu')) {
+                    $('#password').addClass('border-red-500');
+                }
             }
         } catch (error) {
-            errorMessage.text('An error occurred. Please try again.').removeClass('hidden');
+            errorText.text('Đã xảy ra lỗi. Vui lòng thử lại!');
+            errorMessage.removeClass('hidden');
         }
     });
 </script>
+
 {% endblock %}

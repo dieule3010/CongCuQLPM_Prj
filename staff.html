@@ -1,0 +1,1535 @@
+{% extends "base.html" %}
+
+{% block title %}Trang Nhân Viên - Quán Cà Phê{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-lg">
+                    <i class="fas fa-coffee text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-blue-900">Trang Nhân Viên</h1>
+                    <p class="text-sm text-gray-600">Xin chào, {{ user.name }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="badge badge-info">
+                    <i class="fas fa-briefcase mr-1"></i> Nhân Viên
+                </span>
+                <a href="/logout" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Đăng Xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="grid grid-cols-5 border-b">
+                <button class="tab-button tab-active px-4 py-4 text-sm font-medium" data-tab="create-order-tab" onclick="showTab('create-order-tab')">
+                    <i class="fas fa-plus-circle mr-2"></i>Tạo Đơn
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium" data-tab="orders-tab" onclick="showTab('orders-tab')">
+                    <i class="fas fa-shopping-bag mr-2"></i>Đơn Hàng
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium" data-tab="payment-tab" onclick="showTab('payment-tab')">
+                    <i class="fas fa-credit-card mr-2"></i>Thanh Toán
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium" data-tab="tables-tab" onclick="showTab('tables-tab')">
+                    <i class="fas fa-chair mr-2"></i>Quản Lý Bàn
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium" data-tab="inventory-tab" onclick="showTab('inventory-tab')">
+                    <i class="fas fa-boxes mr-2"></i>Kho Hàng
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium" data-tab="shift-tab" onclick="showTab('shift-tab')">
+                    <i class="fas fa-clock mr-2"></i>Báo Cáo Ca
+                </button>
+                <button class="tab-button px-4 py-4 text-sm font-medium" data-tab="attendance-tab" onclick="showTab('attendance-tab')">
+                    <i class="fas fa-user-clock mr-2"></i>Chấm Công
+                </button>
+            </div>
+        </div>
+
+        <!-- Create Order Tab -->
+        <div id="create-order-tab" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Menu Selection -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">Chọn Món</h2>
+                            <select id="posCategoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg">
+                                <option value="all">Tất cả danh mục</option>
+                                <option value="Hot Coffee">Cà phê nóng</option>
+                                <option value="Cold Coffee">Cà phê lạnh</option>
+                                <option value="Pastries">Bánh ngọt</option>
+                            </select>
+                        </div>
+                        <div id="posMenuItems" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Menu items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow p-6 sticky top-24">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Đơn Hàng Tạm Tính</h3>
+                        
+                        <!-- Customer Phone -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">SĐT Khách (tùy chọn)</label>
+                            <input type="tel" id="customerPhone" placeholder="Nhập SĐT để tích điểm" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        
+                        <!-- Table Selection -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Số Bàn (tùy chọn)</label>
+                            <select id="tableSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                                <option value="">-- Chọn bàn --</option>
+                                <!-- Tables will be loaded here -->
+                            </select>
+                        </div>
+                        
+                        <!-- Promotion Code -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mã khuyến mãi</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="promoCode" placeholder="Nhập mã" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg">
+                                <button onclick="applyPromoCode()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    Áp dụng
+                                </button>
+                            </div>
+                            <div id="promoMessage" class="mt-2 text-sm"></div>
+                        </div>
+                        
+                        <div id="posCartItems" class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                                <p>Chưa có món nào</p>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span>Tạm tính:</span>
+                                <span id="posSubtotal">$0.00</span>
+                            </div>
+                            <div id="promoDiscount" class="hidden flex justify-between text-sm text-green-600">
+                                <span>Giảm giá:</span>
+                                <span id="discountAmount">-$0.00</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t">
+                                <span class="font-bold text-lg">Tổng cộng:</span>
+                                <span id="posTotal" class="font-bold text-2xl text-blue-600">$0.00</span>
+                            </div>
+                            <button id="submitOrderBtn" onclick="submitPOSOrder()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <i class="fas fa-check mr-2"></i>Gửi Đơn Hàng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Quản Lý Đơn Hàng</h2>
+                    <div class="flex gap-2">
+                        <button class="px-4 py-2 border rounded-lg hover:bg-gray-50" onclick="filterOrders('all')">Tất Cả</button>
+                        <button class="px-4 py-2 border rounded-lg hover:bg-gray-50" onclick="filterOrders('pending')">Chờ Xử Lý</button>
+                        <button class="px-4 py-2 border rounded-lg hover:bg-gray-50" onclick="filterOrders('in_preparation')">Đang Làm</button>
+                        <button class="px-4 py-2 border rounded-lg hover:bg-gray-50" onclick="filterOrders('completed')">Hoàn Thành</button>
+                    </div>
+                </div>
+                <div id="ordersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Orders will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Tab -->
+        <div id="payment-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Thanh Toán Tại Quầy</h2>
+                <div id="paymentOrdersList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Payment orders will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables Tab -->
+        <div id="tables-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Quản Lý Bàn</h2>
+                <div id="tablesList" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Tables will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Count Tab -->
+        <div id="inventory-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Quản Lý Kho</h2>
+                    <div class="flex gap-2">
+                        <button onclick="openInventoryCheckModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-clipboard-check mr-2"></i>Kiểm Kê Kho
+                        </button>
+                        <button onclick="openModal('inventoryImportModal')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-box-open mr-2"></i>Nhập Kho
+                        </button>
+                        <button onclick="openModal('inventoryExportModal')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            <i class="fas fa-box mr-2"></i>Xuất/Hủy Kho
+                        </button>
+                    </div>
+                </div>
+                <div id="inventoryList" class="space-y-3">
+                    <!-- Inventory items will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Shift Report Tab -->
+        <div id="shift-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Báo Cáo Ca Làm</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-purple-50 rounded-lg p-4">
+                                <p class="text-sm text-purple-900 mb-1">Số Đơn Hoàn Thành</p>
+                                <p id="shiftOrders" class="text-3xl font-bold text-purple-600">0</p>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-4">
+                                <p class="text-sm text-green-900 mb-1">Doanh Thu</p>
+                                <p id="shiftRevenue" class="text-3xl font-bold text-green-600">$0.00</p>
+                            </div>
+                        </div>
+                        <form id="shiftReportForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Ghi Chú Ca Làm</label>
+                                <textarea id="shiftNotes" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Các vấn đề hoặc quan sát trong ca làm việc?"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tình Trạng Thiết Bị</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" checked class="rounded"> Máy Pha Cà Phê Hoạt Động Tốt
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" checked class="rounded"> Máy Espresso Hoạt Động Tốt
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" checked class="rounded"> Máy Xay Hoạt Động Tốt
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="checkbox" checked class="rounded"> Hệ Thống POS Hoạt Động Tốt
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium">
+                                Gửi Báo Cáo Ca
+                            </button>
+                        </form>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Today's Activity</h3>
+                        <div id="shiftActivity" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- Activity log will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Tracking Tab -->
+        <div id="attendance-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Chấm Công & Theo Dõi Giờ Làm</h2>
+                
+                <!-- Clock In/Out Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">
+                            <i class="fas fa-clock mr-2 text-blue-600"></i>Chấm Công
+                        </h3>
+                        <div id="currentTime" class="text-4xl font-bold text-blue-600 mb-6 text-center">00:00:00</div>
+                        <div class="flex gap-3">
+                            <button id="clockInBtn" onclick="clockInAction()" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium shadow-lg">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Vào Ca
+                            </button>
+                            <button id="clockOutBtn" onclick="clockOutAction()" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium shadow-lg" disabled>
+                                <i class="fas fa-sign-out-alt mr-2"></i>Ra Ca
+                            </button>
+                        </div>
+                        <div id="clockMessage" class="mt-4 text-center text-sm text-gray-600"></div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">
+                            <i class="fas fa-chart-line mr-2 text-purple-600"></i>Tổng Kết Tháng Này
+                        </h3>
+                        <div id="attendanceSummary" class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-lg p-4 text-center">
+                                <i class="fas fa-calendar-check text-3xl text-green-600 mb-2"></i>
+                                <p class="text-2xl font-bold text-gray-900" id="totalDaysWorked">0</p>
+                                <p class="text-xs text-gray-600">Ngày Làm Việc</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center">
+                                <i class="fas fa-hourglass-half text-3xl text-blue-600 mb-2"></i>
+                                <p class="text-2xl font-bold text-gray-900" id="totalHoursWorked">0</p>
+                                <p class="text-xs text-gray-600">Tổng Giờ</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 text-center col-span-2">
+                                <i class="fas fa-clock text-3xl text-purple-600 mb-2"></i>
+                                <p class="text-2xl font-bold text-gray-900" id="avgHoursPerDay">0</p>
+                                <p class="text-xs text-gray-600">TB Giờ/Ngày</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance History -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">
+                        <i class="fas fa-history mr-2 text-gray-700"></i>Lịch Sử Chấm Công
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giờ Vào</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Giờ Ra</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng Giờ</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceHistory" class="bg-white divide-y divide-gray-200">
+                                <!-- Attendance records will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Payment Counter Modal -->
+<div id="paymentCounterModal" class="modal">
+    <div class="modal-content max-w-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Thanh Toán Tại Quầy</h3>
+            <button onclick="closeModal('paymentCounterModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="mb-6">
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">Mã đơn hàng:</span>
+                    <span id="counterOrderIdDisplay" class="font-bold text-gray-900"></span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t">
+                    <span class="text-lg font-medium">Tổng tiền:</span>
+                    <span id="counterAmount" class="font-bold text-2xl text-green-600"></span>
+                </div>
+            </div>
+            
+            <form id="paymentCounterForm" class="space-y-4">
+                <input type="hidden" id="counterOrderId" name="orderId">
+                <input type="hidden" id="counterAmountValue" name="amount">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Phương thức thanh toán:</label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition-colors payment-method-counter">
+                            <input type="radio" name="paymentMethod" value="cash" class="mb-2" required>
+                            <i class="fas fa-money-bill-wave text-3xl text-green-600 mb-2"></i>
+                            <span class="font-medium text-sm">Tiền mặt</span>
+                        </label>
+                        
+                        <label class="flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 transition-colors payment-method-counter">
+                            <input type="radio" name="paymentMethod" value="card" class="mb-2" required>
+                            <i class="fas fa-credit-card text-3xl text-blue-600 mb-2"></i>
+                            <span class="font-medium text-sm">Thẻ</span>
+                        </label>
+                        
+                        <label class="flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-500 transition-colors payment-method-counter">
+                            <input type="radio" name="paymentMethod" value="ewallet" class="mb-2" required>
+                            <i class="fas fa-mobile-alt text-3xl text-pink-600 mb-2"></i>
+                            <span class="font-medium text-sm">Ví điện tử</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Cash Payment Section -->
+                <div id="cashPaymentSection" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tiền nhận từ khách</label>
+                        <input type="number" id="cashReceived" placeholder="Nhập số tiền" class="w-full px-4 py-2 border border-gray-300 rounded-lg" step="1000" min="0">
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium text-gray-700">Tiền thối lại:</span>
+                            <span id="cashChange" class="font-bold text-xl text-green-600">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- QR Code Section for E-wallet -->
+                <div id="qrCodeCounterSection" class="hidden text-center p-6 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-3">Quét mã QR bằng ứng dụng thanh toán</p>
+                    <div class="bg-white p-4 rounded-lg inline-block">
+                        <div id="qrCodeCounterPlaceholder" class="w-48 h-48 bg-gray-200 rounded flex items-center justify-center">
+                            <i class="fas fa-qrcode text-5xl text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" id="submitCounterPaymentBtn" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-check mr-2"></i>Hoàn Tất Thanh Toán
+                    </button>
+                    <button type="button" onclick="closeModal('paymentCounterModal')" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Payment counter form handling
+    $('input[name="paymentMethod"]').on('change', function() {
+        const method = $(this).val();
+        $('#cashPaymentSection').addClass('hidden');
+        $('#qrCodeCounterSection').addClass('hidden');
+        
+        if (method === 'cash') {
+            $('#cashPaymentSection').removeClass('hidden');
+            calculateCashChange();
+        } else if (method === 'ewallet') {
+            $('#qrCodeCounterSection').removeClass('hidden');
+        }
+    });
+
+    $('#cashReceived').on('input', calculateCashChange);
+
+    function calculateCashChange() {
+        const amount = parseFloat($('#counterAmountValue').val());
+        const received = parseFloat($('#cashReceived').val()) || 0;
+        const change = received - amount;
+        $('#cashChange').text(formatCurrency(Math.max(0, change)));
+    }
+
+    $('#paymentCounterForm').on('submit', async function(e) {
+        e.preventDefault();
+        
+        const orderId = $('#counterOrderId').val();
+        const amount = parseFloat($('#counterAmountValue').val());
+        const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+        
+        if (paymentMethod === 'cash') {
+            const received = parseFloat($('#cashReceived').val());
+            if (!received || received < amount) {
+                alert('Số tiền nhận phải lớn hơn hoặc bằng tổng tiền');
+                return;
+            }
+        }
+        
+        $('#submitCounterPaymentBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Đang xử lý...');
+        
+        try {
+            const response = await fetch('/api/process-payment', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    orderId: orderId,
+                    paymentMethod: paymentMethod,
+                    amount: amount
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('Thanh toán thành công!');
+                closeModal('paymentCounterModal');
+                loadOrders();
+                loadPendingPayments();
+            } else {
+                alert('Thanh toán thất bại: ' + (data.message || 'Vui lòng thử lại'));
+                $('#submitCounterPaymentBtn').prop('disabled', false).html('<i class="fas fa-check mr-2"></i>Hoàn Tất Thanh Toán');
+            }
+        } catch (error) {
+            alert('Có lỗi xảy ra. Vui lòng thử lại!');
+            $('#submitCounterPaymentBtn').prop('disabled', false).html('<i class="fas fa-check mr-2"></i>Hoàn Tất Thanh Toán');
+        }
+    });
+
+    // Update payment modal when opened
+    $('#paymentCounterModal').on('shown', function() {
+        const orderId = $('#counterOrderId').val();
+        $('#counterOrderIdDisplay').text(orderId);
+        $('#cashReceived').val('');
+        calculateCashChange();
+    });
+</script>
+
+<!-- Inventory Check Modal -->
+<div id="inventoryCheckModal" class="modal">
+    <div class="modal-content max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Kiểm Kê Kho</h3>
+            <button onclick="closeModal('inventoryCheckModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="mb-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+            <i class="fas fa-info-circle mr-2"></i>Đếm số lượng thực tế tại kho và so sánh với hệ thống
+        </div>
+        
+        <div id="inventoryCheckList" class="space-y-3 mb-6">
+            <!-- Inventory check items will be loaded here -->
+        </div>
+        
+        <div class="flex gap-3 pt-4 border-t">
+            <button onclick="submitInventoryCheck()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-medium">
+                <i class="fas fa-check mr-2"></i>Xác Nhận Và Điều Chỉnh Kho
+            </button>
+            <button onclick="closeModal('inventoryCheckModal')" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                Hủy
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Import Modal -->
+<div id="inventoryImportModal" class="modal">
+    <div class="modal-content max-w-3xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Phiếu Nhập Kho</h3>
+            <button onclick="closeModal('inventoryImportModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="importForm" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nhà cung cấp</label>
+                    <input type="text" id="importSupplier" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Tên nhà cung cấp">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ghi chú</label>
+                    <input type="text" id="importNote" class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="Ghi chú (nếu có)">
+                </div>
+            </div>
+            
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-medium text-gray-700">Danh sách nguyên liệu nhập</label>
+                    <button type="button" onclick="addImportItem()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+                        <i class="fas fa-plus mr-2"></i>Thêm Nguyên Liệu
+                    </button>
+                </div>
+                <div id="importItemsList" class="space-y-3">
+                    <!-- Import items will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-4 border-t">
+                <button type="button" onclick="submitInventoryImport()" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-medium">
+                    <i class="fas fa-check mr-2"></i>Hoàn Tất Nhập Kho
+                </button>
+                <button type="button" onclick="closeModal('inventoryImportModal')" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Hủy
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Inventory Export Modal -->
+<div id="inventoryExportModal" class="modal">
+    <div class="modal-content max-w-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Phiếu Xuất/Hủy Kho</h3>
+            <button onclick="closeModal('inventoryExportModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="exportForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nguyên liệu cần hủy</label>
+                <select id="exportItemId" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                    <option value="">Chọn nguyên liệu...</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Số lượng hủy</label>
+                <input type="number" id="exportQuantity" class="w-full px-4 py-2 border border-gray-300 rounded-lg" min="0" step="0.01" required>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Lý do hủy</label>
+                <select id="exportReason" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                    <option value="">Chọn lý do...</option>
+                    <option value="hư_hỏng">Hư hỏng</option>
+                    <option value="hết_hạn">Hết hạn sử dụng</option>
+                    <option value="hao_hụt">Hao hụt pha chế</option>
+                    <option value="khác">Khác</option>
+                </select>
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+                <button type="button" onclick="submitInventoryExport()" class="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-medium">
+                    <i class="fas fa-check mr-2"></i>Xác Nhận Hủy Kho
+                </button>
+                <button type="button" onclick="closeModal('inventoryExportModal')" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Hủy
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Update export modal when opened
+    $('#inventoryExportModal').on('shown', function() {
+        const select = $('#exportItemId');
+        select.html('<option value="">Chọn nguyên liệu...</option>');
+        inventory.forEach(item => {
+            select.append(`<option value="${item.id}">${item.name} (Tồn: ${item.quantity} ${item.unit})</option>`);
+        });
+    });
+
+    function openInventoryCheckModal() {
+        startInventoryCheck();
+    }
+</script>
+
+<script>
+    let orders = [];
+    let tables = [];
+    let inventory = [];
+    let currentFilter = 'all';
+    let posCart = [];
+    let posMenuItems = [];
+    let appliedPromo = null;
+
+    // Load orders
+    async function loadOrders() {
+        try {
+            const response = await fetch('/api/orders');
+            const data = await response.json();
+            orders = data.orders;
+            renderOrders();
+            updateShiftStats();
+        } catch (error) {
+            console.error('Error loading orders:', error);
+        }
+    }
+
+    function renderOrders() {
+        const container = $('#ordersList');
+        const filtered = currentFilter === 'all' ? orders : orders.filter(o => o.status === currentFilter);
+        
+        container.html(filtered.map(order => {
+            const statusColors = {
+                'pending': 'badge-warning',
+                'in_preparation': 'badge-info',
+                'completed': 'badge-success'
+            };
+            
+            return `
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-bold text-gray-900">${order.id}</h3>
+                            <p class="text-sm text-gray-600">${order.customer}</p>
+                            <p class="text-xs text-gray-500">${order.time}</p>
+                        </div>
+                        <span class="badge ${statusColors[order.status]}">${getOrderStatusText(order.status)}</span>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-sm text-gray-700">${order.items.join(', ')}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t">
+                        <span class="font-bold text-green-600">${formatCurrency(order.total)}</span>
+                        <div class="flex gap-2">
+                            ${order.status === 'pending' ? `
+                                <button onclick="updateOrderStatus('${order.id}', 'in_preparation')" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                    Bắt Đầu
+                                </button>
+                            ` : ''}
+                            ${order.status === 'in_preparation' ? `
+                                <button onclick="updateOrderStatus('${order.id}', 'completed')" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                                    Hoàn Thành
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join(''));
+    }
+
+    function filterOrders(status) {
+        currentFilter = status;
+        renderOrders();
+    }
+    
+    function getOrderStatusText(status) {
+        const statusMap = {
+            'pending': 'Chờ Xử Lý',
+            'in_preparation': 'Đang Làm',
+            'completed': 'Hoàn Thành',
+            'waiting_payment': 'Chờ Thanh Toán'
+        };
+        return statusMap[status] || status;
+    }
+    
+    function getTableStatusText(status) {
+        const statusMap = {
+            'available': 'Trống',
+            'occupied': 'Đang Dùng',
+            'reserved': 'Đã Đặt'
+        };
+        return statusMap[status] || status;
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+        try {
+            const response = await fetch('/api/update-order-status', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    orderId: orderId,
+                    status: newStatus
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                // Reload orders
+                loadOrders();
+            } else {
+                alert('Có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại'));
+            }
+        } catch (error) {
+            console.error('Error updating order status:', error);
+            alert('Có lỗi xảy ra khi cập nhật trạng thái đơn hàng');
+        }
+    }
+
+    // Load tables
+    async function loadTables() {
+        try {
+            const response = await fetch('/api/tables');
+            const data = await response.json();
+            tables = data.tables;
+            renderTables();
+        } catch (error) {
+            console.error('Error loading tables:', error);
+        }
+    }
+
+    function renderTables() {
+        const container = $('#tablesList');
+        
+        container.html(tables.map(table => {
+            const statusColors = {
+                'available': 'bg-green-100 border-green-500',
+                'occupied': 'bg-red-100 border-red-500',
+                'reserved': 'bg-yellow-100 border-yellow-500'
+            };
+            
+            const statusIcons = {
+                'available': 'check-circle',
+                'occupied': 'user-friends',
+                'reserved': 'calendar-check'
+            };
+            
+            return `
+                <div class="border-2 ${statusColors[table.status]} rounded-lg p-6 text-center cursor-pointer hover:shadow-lg transition-shadow" onclick="toggleTableStatus('${table.id}')">
+                    <i class="fas fa-${statusIcons[table.status]} text-3xl mb-2"></i>
+                    <h3 class="font-bold text-lg">Bàn ${table.number}</h3>
+                    <p class="text-sm text-gray-600">${table.capacity} chỗ</p>
+                    <p class="text-xs font-medium mt-2">${getTableStatusText(table.status)}</p>
+                </div>
+            `;
+        }).join(''));
+    }
+
+    async function toggleTableStatus(tableId) {
+        const table = tables.find(t => t.id === tableId);
+        if (!table) return;
+        
+        const statuses = ['available', 'occupied', 'reserved'];
+        const currentIndex = statuses.indexOf(table.status);
+        const newStatus = statuses[(currentIndex + 1) % statuses.length];
+        
+        try {
+            const response = await fetch(`/api/tables/${tableId}/status`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ status: newStatus })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                // Reload tables to get latest status
+                await loadTables();
+                // Refresh POS dropdown if "Tạo Đơn" tab is visible
+                if (!$('#create-order-tab').hasClass('hidden')) {
+                    loadTablesForPOS();
+                }
+            } else {
+                alert('Có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại'));
+            }
+        } catch (error) {
+            console.error('Error updating table status:', error);
+            alert('Có lỗi xảy ra khi cập nhật trạng thái bàn');
+        }
+    }
+
+    // Load inventory
+    async function loadInventory() {
+        try {
+            const response = await fetch('/api/inventory');
+            const data = await response.json();
+            inventory = data.items;
+            renderInventory();
+        } catch (error) {
+            console.error('Error loading inventory:', error);
+        }
+    }
+
+    function renderInventory() {
+        const container = $('#inventoryList');
+        
+        container.html(inventory.map(item => `
+            <div class="border rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900">${item.name}</h4>
+                        <p class="text-sm text-gray-600">${item.supplier}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">Current Stock</p>
+                            <p class="font-bold ${item.quantity < item.minStock ? 'text-red-600' : 'text-gray-900'}">${item.quantity} ${item.unit}</p>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="updateInventory('${item.id}', -1)" class="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <button onclick="updateInventory('${item.id}', 1)" class="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                ${item.quantity < item.minStock ? `
+                    <div class="mt-2 bg-red-50 text-red-700 text-xs px-3 py-2 rounded">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>Low stock alert!
+                    </div>
+                ` : ''}
+            </div>
+        `).join(''));
+    }
+
+    function updateInventory(itemId, change) {
+        const item = inventory.find(i => i.id === itemId);
+        if (item) {
+            item.quantity = Math.max(0, item.quantity + change);
+            renderInventory();
+        }
+    }
+
+    // Inventory Check Functions
+    let inventoryCheckItems = [];
+    
+    async function startInventoryCheck() {
+        try {
+            const response = await fetch('/api/inventory');
+            const data = await response.json();
+            inventoryCheckItems = data.items.map(item => ({
+                ...item,
+                actualQuantity: item.quantity,
+                difference: 0,
+                reason: ''
+            }));
+            renderInventoryCheck();
+            openModal('inventoryCheckModal');
+        } catch (error) {
+            console.error('Error loading inventory for check:', error);
+        }
+    }
+
+    function renderInventoryCheck() {
+        const container = $('#inventoryCheckList');
+        container.html(inventoryCheckItems.map(item => {
+            const difference = item.actualQuantity - item.quantity;
+            return `
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900">${item.name}</h4>
+                            <p class="text-sm text-gray-600">${item.supplier}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">Tồn kho hệ thống</p>
+                            <p class="font-bold text-gray-900">${item.quantity} ${item.unit}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Tồn kho thực tế</label>
+                            <input type="number" 
+                                   value="${item.actualQuantity}" 
+                                   onchange="updateInventoryCheck('${item.id}', this.value)"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                                   min="0"
+                                   step="0.01">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Chênh lệch</label>
+                            <input type="text" 
+                                   value="${difference > 0 ? '+' : ''}${difference} ${item.unit}" 
+                                   readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 ${difference !== 0 ? (difference > 0 ? 'text-green-600' : 'text-red-600') : ''}">
+                        </div>
+                    </div>
+                    ${difference !== 0 ? `
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Lý do chênh lệch</label>
+                            <input type="text" 
+                                   placeholder="Nhập lý do..." 
+                                   value="${item.reason}"
+                                   onchange="updateInventoryCheckReason('${item.id}', this.value)"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join(''));
+    }
+
+    function updateInventoryCheck(itemId, actualQuantity) {
+        const item = inventoryCheckItems.find(i => i.id === itemId);
+        if (item) {
+            item.actualQuantity = parseFloat(actualQuantity) || 0;
+            item.difference = item.actualQuantity - item.quantity;
+            renderInventoryCheck();
+        }
+    }
+
+    function updateInventoryCheckReason(itemId, reason) {
+        const item = inventoryCheckItems.find(i => i.id === itemId);
+        if (item) {
+            item.reason = reason;
+        }
+    }
+
+    async function submitInventoryCheck() {
+        const adjustments = inventoryCheckItems
+            .filter(item => item.difference !== 0)
+            .map(item => ({
+                id: item.id,
+                systemQuantity: item.quantity,
+                actualQuantity: item.actualQuantity,
+                difference: item.difference,
+                reason: item.reason
+            }));
+        
+        if (adjustments.length === 0) {
+            alert('Không có chênh lệch nào cần điều chỉnh');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/inventory-check', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ adjustments })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('Kiểm kê kho thành công!');
+                closeModal('inventoryCheckModal');
+                loadInventory();
+            }
+        } catch (error) {
+            alert('Có lỗi xảy ra khi kiểm kê kho');
+        }
+    }
+
+    // Inventory Import Functions
+    let importItems = [];
+    
+    function addImportItem() {
+        importItems.push({
+            id: '',
+            quantity: 0,
+            unitPrice: 0,
+            supplier: ''
+        });
+        renderImportItems();
+    }
+
+    function renderImportItems() {
+        const container = $('#importItemsList');
+        container.html(importItems.map((item, index) => `
+            <div class="border rounded-lg p-4">
+                <div class="grid grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Nguyên liệu</label>
+                        <select onchange="updateImportItem(${index}, 'id', this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                            <option value="">Chọn...</option>
+                            ${inventory.map(inv => `<option value="${inv.id}">${inv.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Số lượng</label>
+                        <input type="number" 
+                               value="${item.quantity}" 
+                               onchange="updateImportItem(${index}, 'quantity', this.value)"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                               min="0"
+                               step="0.01">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Đơn giá</label>
+                        <input type="number" 
+                               value="${item.unitPrice}" 
+                               onchange="updateImportItem(${index}, 'unitPrice', this.value)"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                               min="0"
+                               step="1000">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="removeImportItem(${index})" class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 text-sm">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join(''));
+    }
+
+    function updateImportItem(index, field, value) {
+        importItems[index][field] = field === 'quantity' || field === 'unitPrice' ? parseFloat(value) || 0 : value;
+    }
+
+    function removeImportItem(index) {
+        importItems.splice(index, 1);
+        renderImportItems();
+    }
+
+    async function submitInventoryImport() {
+        if (importItems.length === 0) {
+            alert('Vui lòng thêm ít nhất một nguyên liệu');
+            return;
+        }
+        
+        const supplier = $('#importSupplier').val();
+        const note = $('#importNote').val();
+        
+        try {
+            const response = await fetch('/api/inventory-import', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    supplier: supplier,
+                    note: note,
+                    items: importItems
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('Nhập kho thành công!');
+                closeModal('inventoryImportModal');
+                importItems = [];
+                $('#importSupplier').val('');
+                $('#importNote').val('');
+                loadInventory();
+            }
+        } catch (error) {
+            alert('Có lỗi xảy ra khi nhập kho');
+        }
+    }
+
+    // Inventory Export Functions
+    async function submitInventoryExport() {
+        const itemId = $('#exportItemId').val();
+        const quantity = parseFloat($('#exportQuantity').val());
+        const reason = $('#exportReason').val();
+        
+        if (!itemId || !quantity || quantity <= 0) {
+            alert('Vui lòng điền đầy đủ thông tin');
+            return;
+        }
+        
+        const item = inventory.find(i => i.id === itemId);
+        if (quantity > item.quantity) {
+            alert(`Số lượng hủy (${quantity}) vượt quá số lượng tồn kho (${item.quantity})`);
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/inventory-export', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    itemId: itemId,
+                    quantity: quantity,
+                    reason: reason
+                })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('Xuất/Hủy kho thành công!');
+                closeModal('inventoryExportModal');
+                $('#exportItemId').val('');
+                $('#exportQuantity').val('');
+                $('#exportReason').val('');
+                loadInventory();
+            }
+        } catch (error) {
+            alert('Có lỗi xảy ra khi xuất/hủy kho');
+        }
+    }
+
+    // Shift stats
+    function updateShiftStats() {
+        const completedOrders = orders.filter(o => o.status === 'completed').length;
+        const revenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.total, 0);
+        
+        $('#shiftOrders').text(completedOrders);
+        $('#shiftRevenue').text(formatCurrency(revenue));
+        
+        // Update activity log
+        const activityLog = orders.map(order => `
+            <div class="border-l-4 ${order.status === 'completed' ? 'border-green-500' : 'border-blue-500'} pl-4 pb-3">
+                <p class="font-medium text-sm">${order.id} - ${order.customer}</p>
+                <p class="text-xs text-gray-600">${order.time} • ${order.status.replace('_', ' ')}</p>
+                <p class="text-xs text-gray-500">${order.items.join(', ')}</p>
+            </div>
+        `).join('');
+        
+        $('#shiftActivity').html(activityLog || '<p class="text-center text-gray-500">Chưa có hoạt động nào</p>');
+    }
+
+    // Shift report form
+    $('#shiftReportForm').on('submit', function(e) {
+        e.preventDefault();
+        alert('Shift report submitted successfully!');
+        this.reset();
+    });
+
+    // Time tracking
+    let clockInTime = null;
+    let clockOutTime = null;
+    let totalHoursWorked = 0;
+    let totalDaysWorked = 0;
+    let avgHoursPerDay = 0;
+
+    function clockInAction() {
+        clockInTime = new Date();
+        $('#currentTime').text(formatTime(clockInTime));
+        $('#clockInBtn').prop('disabled', true);
+        $('#clockOutBtn').prop('disabled', false);
+        $('#clockMessage').text('Bạn đã vào ca thành công.');
+    }
+
+    function clockOutAction() {
+        clockOutTime = new Date();
+        const hoursWorked = (clockOutTime - clockInTime) / (1000 * 60 * 60);
+        totalHoursWorked += hoursWorked;
+        totalDaysWorked++;
+        avgHoursPerDay = totalHoursWorked / totalDaysWorked;
+
+        $('#currentTime').text(formatTime(clockOutTime));
+        $('#clockInBtn').prop('disabled', false);
+        $('#clockOutBtn').prop('disabled', true);
+        $('#clockMessage').text('Bạn đã ra ca thành công.');
+
+        // Update summary
+        $('#totalDaysWorked').text(totalDaysWorked);
+        $('#totalHoursWorked').text(totalHoursWorked.toFixed(2));
+        $('#avgHoursPerDay').text(avgHoursPerDay.toFixed(2));
+
+        // Add to history
+        const historyRow = `
+            <tr>
+                <td class="px-4 py-3 text-sm text-gray-500">${formatDate(clockInTime)}</td>
+                <td class="px-4 py-3 text-sm text-gray-500">${formatTime(clockInTime)}</td>
+                <td class="px-4 py-3 text-sm text-gray-500">${formatTime(clockOutTime)}</td>
+                <td class="px-4 py-3 text-sm text-gray-500">${hoursWorked.toFixed(2)}</td>
+                <td class="px-4 py-3 text-sm text-gray-500">Hoàn Thành</td>
+            </tr>
+        `;
+        $('#attendanceHistory').append(historyRow);
+    }
+
+    function formatTime(date) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const seconds = date.getSeconds().toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function formatDate(date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    // POS Functions
+    async function loadPOSMenu() {
+        try {
+            const response = await fetch('/api/menu-items');
+            const data = await response.json();
+            posMenuItems = data.items;
+            renderPOSMenu();
+        } catch (error) {
+            console.error('Error loading POS menu:', error);
+        }
+    }
+
+    function renderPOSMenu(category = 'all') {
+        const container = $('#posMenuItems');
+        const filtered = category === 'all' ? posMenuItems : posMenuItems.filter(item => item.category === category);
+        
+        container.html(filtered.map(item => `
+            <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onclick="addToPOSCart('${item.id}')">
+                <img src="${item.image}" alt="${item.name}" class="w-full h-32 object-cover">
+                <div class="p-3">
+                    <h3 class="font-bold text-gray-900 text-sm">${item.name}</h3>
+                    <p class="text-xs text-gray-600 mb-2">${item.category}</p>
+                    <span class="text-blue-600 font-bold">$${item.price.toFixed(2)}</span>
+                </div>
+            </div>
+        `).join(''));
+    }
+
+    function addToPOSCart(itemId) {
+        const item = posMenuItems.find(i => i.id === itemId);
+        if (!item) return;
+        
+        const existingItem = posCart.find(c => c.id === itemId);
+        if (existingItem) {
+            existingItem.quantity++;
+        } else {
+            posCart.push({ ...item, quantity: 1 });
+        }
+        
+        renderPOSCart();
+    }
+
+    function removeFromPOSCart(itemId) {
+        posCart = posCart.filter(item => item.id !== itemId);
+        renderPOSCart();
+    }
+
+    function updatePOSQuantity(itemId, change) {
+        const item = posCart.find(c => c.id === itemId);
+        if (item) {
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromPOSCart(itemId);
+            } else {
+                renderPOSCart();
+            }
+        }
+    }
+
+    function renderPOSCart() {
+        const container = $('#posCartItems');
+        const submitBtn = $('#submitOrderBtn');
+        
+        if (posCart.length === 0) {
+            container.html(`
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                    <p>Chưa có món nào</p>
+                </div>
+            `);
+            submitBtn.prop('disabled', true);
+        } else {
+            container.html(posCart.map(item => `
+                <div class="flex items-center gap-2 border-b pb-2">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-sm text-gray-900">${item.name}</h4>
+                        <p class="text-xs text-gray-600">$${item.price.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="updatePOSQuantity('${item.id}', -1)" class="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 text-xs">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span class="w-8 text-center text-sm font-medium">${item.quantity}</span>
+                        <button onclick="updatePOSQuantity('${item.id}', 1)" class="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 text-xs">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <button onclick="removeFromPOSCart('${item.id}')" class="text-red-600 hover:text-red-700 text-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join(''));
+            submitBtn.prop('disabled', false);
+        }
+        
+        updatePOSTotal();
+    }
+
+    function updatePOSTotal() {
+        const subtotal = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        let discount = 0;
+        
+        if (appliedPromo) {
+            if (appliedPromo.type === 'percentage') {
+                discount = subtotal * (appliedPromo.discount / 100);
+                if (appliedPromo.maxDiscount && discount > appliedPromo.maxDiscount) {
+                    discount = appliedPromo.maxDiscount;
+                }
+            } else if (appliedPromo.type === 'fixed') {
+                discount = appliedPromo.discount;
+            }
+        }
+        
+        const total = subtotal - discount;
+        
+        $('#posSubtotal').text(formatCurrency(subtotal));
+        if (discount > 0) {
+            $('#promoDiscount').removeClass('hidden');
+            $('#discountAmount').text('-' + formatCurrency(discount));
+        } else {
+            $('#promoDiscount').addClass('hidden');
+        }
+        $('#posTotal').text(formatCurrency(total));
+    }
+
+    async function applyPromoCode() {
+        const code = $('#promoCode').val().trim();
+        if (!code) {
+            $('#promoMessage').html('<span class="text-red-600">Vui lòng nhập mã khuyến mãi</span>');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/promotions');
+            const data = await response.json();
+            const promo = data.promotions.find(p => p.code === code && p.status === 'active');
+            
+            if (promo) {
+                appliedPromo = promo;
+                $('#promoMessage').html('<span class="text-green-600">Áp dụng mã thành công!</span>');
+                updatePOSTotal();
+            } else {
+                appliedPromo = null;
+                $('#promoMessage').html('<span class="text-red-600">Mã khuyến mãi không hợp lệ</span>');
+                updatePOSTotal();
+            }
+        } catch (error) {
+            $('#promoMessage').html('<span class="text-red-600">Có lỗi xảy ra</span>');
+        }
+    }
+
+    async function submitPOSOrder() {
+        if (posCart.length === 0) return;
+        
+        const customerPhone = $('#customerPhone').val().trim();
+        const tableId = $('#tableSelect').val();
+        const orderData = {
+            items: posCart.map(item => ({
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            })),
+            customerPhone: customerPhone || null,
+            tableId: tableId || null,
+            promoCode: appliedPromo ? appliedPromo.code : null,
+            subtotal: posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            discount: appliedPromo ? (() => {
+                const subtotal = posCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                if (appliedPromo.type === 'percentage') {
+                    let discount = subtotal * (appliedPromo.discount / 100);
+                    if (appliedPromo.maxDiscount && discount > appliedPromo.maxDiscount) {
+                        discount = appliedPromo.maxDiscount;
+                    }
+                    return discount;
+                }
+                return appliedPromo.discount;
+            })() : 0
+        };
+        
+        try {
+            const response = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(orderData)
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('Đơn hàng đã được tạo thành công!');
+                posCart = [];
+                appliedPromo = null;
+                $('#customerPhone').val('');
+                $('#tableSelect').val('');
+                $('#promoCode').val('');
+                $('#promoMessage').html('');
+                renderPOSCart();
+                loadOrders();
+                // Reload tables to update status (bàn sẽ chuyển từ available sang occupied)
+                await loadTables();
+                // Refresh tables dropdown (bàn đã chọn sẽ biến mất)
+                loadTablesForPOS();
+            }
+        } catch (error) {
+            alert('Có lỗi xảy ra khi tạo đơn hàng');
+        }
+    }
+    
+    // Load tables for POS dropdown
+    async function loadTablesForPOS() {
+        try {
+            const response = await fetch('/api/tables');
+            const data = await response.json();
+            const select = $('#tableSelect');
+            const currentValue = select.val(); // Save current selection
+            
+            select.html('<option value="">-- Chọn bàn --</option>');
+            
+            // Only show available tables
+            const availableTables = data.tables.filter(table => table.status === 'available');
+            
+            if (availableTables.length === 0) {
+                select.append('<option value="" disabled>Không có bàn trống</option>');
+            } else {
+                availableTables.forEach(table => {
+                    const isSelected = currentValue === table.id ? 'selected' : '';
+                    select.append(`<option value="${table.id}" ${isSelected}>Bàn ${table.number} (${table.capacity} chỗ)</option>`);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading tables for POS:', error);
+        }
+    }
+    
+    // Category filter for POS
+    $('#posCategoryFilter').on('change', function() {
+        renderPOSMenu(this.value);
+    });
+
+    // Payment Tab
+    async function loadPendingPayments() {
+        try {
+            const response = await fetch('/api/orders');
+            const data = await response.json();
+            // Filter orders that need payment (not paid yet)
+            const pendingOrders = data.orders.filter(o => 
+                (o.status === 'pending' || 
+                 o.status === 'waiting_payment' || 
+                 o.status === 'in_preparation' ||
+                 o.status === 'completed') && 
+                o.payment_status !== 'paid'
+            );
+            renderPaymentOrders(pendingOrders);
+        } catch (error) {
+            console.error('Error loading payments:', error);
+        }
+    }
+
+    function renderPaymentOrders(orders) {
+        const container = $('#paymentOrdersList');
+        if (orders.length === 0) {
+            container.html('<div class="text-center py-8 text-gray-500">Không có đơn hàng nào cần thanh toán</div>');
+        } else {
+            container.html(orders.map(order => `
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h3 class="font-bold text-gray-900">${order.id}</h3>
+                            <p class="text-sm text-gray-600">${order.customer || 'Khách vãng lai'}</p>
+                            <p class="text-xs text-gray-500">${order.time || ''}</p>
+                        </div>
+                        <span class="badge ${order.status === 'completed' ? 'badge-success' : 'badge-warning'}">
+                            ${order.status === 'completed' ? 'Đã Thanh Toán' : 'Chờ Thanh Toán'}
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <p class="text-sm text-gray-700">${order.items.join(', ')}</p>
+                    </div>
+                    <div class="flex justify-between items-center pt-3 border-t mb-3">
+                        <span class="font-bold text-lg">Tổng tiền:</span>
+                        <span class="font-bold text-2xl text-green-600">${formatCurrency(order.total)}</span>
+                    </div>
+                    ${order.status !== 'completed' ? `
+                        <button onclick="openPaymentCounterModal('${order.id}', ${order.total})" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-cash-register mr-2"></i>Xử Lý Thanh Toán
+                        </button>
+                    ` : ''}
+                </div>
+            `).join(''));
+        }
+    }
+
+    function openPaymentCounterModal(orderId, amount) {
+        $('#counterOrderId').val(orderId);
+        $('#counterAmount').text(formatCurrency(amount));
+        $('#counterAmountValue').val(amount);
+        openModal('paymentCounterModal');
+    }
+
+    // Initialize
+    $(document).ready(function() {
+        // Override showTab to refresh tables dropdown when "Tạo Đơn" tab is opened
+        // Do this after DOM is ready to ensure showTab from base.html is already defined
+        if (typeof window.showTab === 'function') {
+            const originalShowTab = window.showTab;
+            window.showTab = function(tabName) {
+                originalShowTab(tabName);
+                // Refresh tables dropdown when "Tạo Đơn" tab is shown
+                if (tabName === 'create-order-tab') {
+                    loadTablesForPOS();
+                }
+                // Load pending payments when "Thanh Toán" tab is shown
+                if (tabName === 'payment-tab') {
+                    loadPendingPayments();
+                }
+            };
+        }
+        
+        loadOrders();
+        loadTables();
+        loadInventory();
+        loadPOSMenu();
+        loadTablesForPOS(); // Load tables for POS dropdown
+    });
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Customer Dashboard - Coffee Shop{% endblock %}
+{% block title %}Trang Khách Hàng - Quán Cà Phê{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gray-50">
@@ -12,16 +12,16 @@
                     <i class="fas fa-coffee text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-purple-900">Coffee Shop</h1>
-                    <p class="text-sm text-gray-600">Welcome, {{ user.name }}</p>
+                    <h1 class="text-2xl font-bold text-purple-900">Quán Cà Phê</h1>
+                    <p class="text-sm text-gray-600">Xin chào, {{ user.name }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <span class="badge badge-purple">
-                    <i class="fas fa-user mr-1"></i> Customer
+                    <i class="fas fa-user mr-1"></i> Khách Hàng
                 </span>
                 <a href="/logout" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    <i class="fas fa-sign-out-alt mr-2"></i>Đăng Xuất
                 </a>
             </div>
         </div>
@@ -31,15 +31,21 @@
     <main class="container mx-auto px-4 py-6">
         <!-- Tabs -->
         <div class="bg-white rounded-lg shadow mb-6">
-            <div class="grid grid-cols-3 border-b">
+            <div class="grid grid-cols-4 border-b">
                 <button class="tab-button tab-active px-6 py-4 text-sm font-medium" data-tab="menu-tab" onclick="showTab('menu-tab')">
-                    <i class="fas fa-utensils mr-2"></i>Menu & Order
+                    <i class="fas fa-utensils mr-2"></i>Thực Đơn & Đặt Món
                 </button>
                 <button class="tab-button px-6 py-4 text-sm font-medium" data-tab="reservations-tab" onclick="showTab('reservations-tab')">
-                    <i class="fas fa-calendar mr-2"></i>Reservations
+                    <i class="fas fa-calendar mr-2"></i>Đặt Bàn
                 </button>
                 <button class="tab-button px-6 py-4 text-sm font-medium" data-tab="history-tab" onclick="showTab('history-tab')">
-                    <i class="fas fa-history mr-2"></i>Order History
+                    <i class="fas fa-history mr-2"></i>Lịch Sử Đơn Hàng
+                </button>
+                <button class="tab-button px-6 py-4 text-sm font-medium" data-tab="payment-tab" onclick="showTab('payment-tab')">
+                    <i class="fas fa-credit-card mr-2"></i>Thanh Toán
+                </button>
+                <button class="tab-button px-6 py-4 text-sm font-medium" data-tab="feedback-tab" onclick="showTab('feedback-tab')">
+                    <i class="fas fa-comment-alt mr-2"></i>Phản Hồi
                 </button>
             </div>
         </div>
@@ -51,12 +57,12 @@
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow p-6">
                         <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold text-gray-900">Our Menu</h2>
+                            <h2 class="text-2xl font-bold text-gray-900">Thực Đơn</h2>
                             <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg">
-                                <option value="all">All Categories</option>
-                                <option value="Hot Coffee">Hot Coffee</option>
-                                <option value="Cold Coffee">Cold Coffee</option>
-                                <option value="Pastries">Pastries</option>
+                                <option value="all">Tất cả danh mục</option>
+                                <option value="Hot Coffee">Cà phê nóng</option>
+                                <option value="Cold Coffee">Cà phê lạnh</option>
+                                <option value="Pastries">Bánh ngọt</option>
                             </select>
                         </div>
                         <div id="menuItems" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,20 +74,20 @@
                 <!-- Cart -->
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-lg shadow p-6 sticky top-24">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">Your Order</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Đơn Hàng Của Bạn</h3>
                         <div id="cartItems" class="space-y-3 mb-4 max-h-96 overflow-y-auto">
                             <div class="text-center py-8 text-gray-500">
                                 <i class="fas fa-shopping-cart text-4xl mb-2"></i>
-                                <p>Your cart is empty</p>
+                                <p>Giỏ hàng của bạn đang trống</p>
                             </div>
                         </div>
                         <div class="border-t pt-4">
                             <div class="flex justify-between items-center mb-4">
-                                <span class="font-bold text-lg">Total:</span>
-                                <span id="cartTotal" class="font-bold text-2xl text-purple-600">$0.00</span>
+                                <span class="font-bold text-lg">Tổng tiền:</span>
+                                <span id="cartTotal" class="font-bold text-2xl text-purple-600">₫0</span>
                             </div>
                             <button id="placeOrderBtn" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                                Place Order
+                                <i class="fas fa-check mr-2"></i>Đặt Hàng
                             </button>
                         </div>
                     </div>
@@ -92,7 +98,7 @@
         <!-- Reservations Tab -->
         <div id="reservations-tab" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Table Reservation</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Đặt Bàn Trước</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                         <form id="reservationForm" class="space-y-4">
@@ -142,10 +148,93 @@
         <!-- Order History Tab -->
         <div id="history-tab" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6">Order History</h2>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Lịch Sử Đơn Hàng</h2>
                 <div id="orderHistory" class="space-y-4">
                     <!-- Order history will be loaded here -->
                 </div>
+            </div>
+        </div>
+
+        <!-- Payment Tab -->
+        <div id="payment-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Thanh Toán Đơn Hàng</h2>
+                <div id="pendingOrdersList" class="space-y-4 mb-6">
+                    <!-- Pending orders will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Tab -->
+        <div id="feedback-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Gửi Phản Hồi & Đánh Giá</h2>
+                <form id="feedbackForm" class="max-w-2xl mx-auto space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-utensils mr-2 text-amber-600"></i>Đánh Giá Món Ăn
+                        </label>
+                        <div class="flex gap-2">
+                            <button type="button" class="star-rating" data-type="food" data-value="1">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="food" data-value="2">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="food" data-value="3">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="food" data-value="4">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="food" data-value="5">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" id="foodRating" name="foodRating" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-concierge-bell mr-2 text-purple-600"></i>Đánh Giá Dịch Vụ
+                        </label>
+                        <div class="flex gap-2">
+                            <button type="button" class="star-rating" data-type="service" data-value="1">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="service" data-value="2">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="service" data-value="3">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="service" data-value="4">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                            <button type="button" class="star-rating" data-type="service" data-value="5">
+                                <i class="fas fa-star text-gray-300 text-2xl hover:text-yellow-400"></i>
+                            </button>
+                        </div>
+                        <input type="hidden" id="serviceRating" name="serviceRating" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-comment mr-2 text-blue-600"></i>Nhận Xét & Góp Ý
+                        </label>
+                        <textarea 
+                            id="feedbackComment" 
+                            name="comment" 
+                            rows="5" 
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent" 
+                            placeholder="Hãy chia sẻ trải nghiệm của bạn với chúng tôi..."></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium shadow-lg">
+                        <i class="fas fa-paper-plane mr-2"></i>Gửi Phản Hồi
+                    </button>
+                </form>
             </div>
         </div>
     </main>
@@ -157,11 +246,126 @@
         <div class="text-green-600 mb-4">
             <i class="fas fa-check-circle text-6xl"></i>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h3>
-        <p class="text-gray-600 mb-6">Your order has been received and is being prepared.</p>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">Đặt Hàng Thành Công!</h3>
+        <p class="text-gray-600 mb-6">Đơn hàng của bạn đã được tiếp nhận và đang được chuẩn bị.</p>
         <button onclick="closeModal('orderSuccessModal')" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
-            Continue Shopping
+            Tiếp Tục Mua Sắm
         </button>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content max-w-2xl">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-900">Thanh Toán Đơn Hàng</h3>
+            <button onclick="closeModal('paymentModal')" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="mb-6">
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">Mã đơn hàng:</span>
+                    <span id="paymentOrderIdDisplay" class="font-bold text-gray-900"></span>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t">
+                    <span class="text-lg font-medium">Tổng tiền:</span>
+                    <span id="paymentAmount" class="font-bold text-2xl text-purple-600"></span>
+                </div>
+            </div>
+            
+            <form id="paymentForm" class="space-y-4">
+                <input type="hidden" id="paymentOrderId" name="orderId">
+                <input type="hidden" id="paymentAmountValue" name="amount">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Phương thức thanh toán:</label>
+                    <div class="space-y-3">
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-500 transition-colors payment-method">
+                            <input type="radio" name="paymentMethod" value="momo" class="mr-3" required>
+                            <div class="flex items-center flex-1">
+                                <i class="fas fa-mobile-alt text-2xl text-pink-600 mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900">Ví điện tử Momo</p>
+                                    <p class="text-xs text-gray-500">Quét mã QR để thanh toán</p>
+                                </div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-500 transition-colors payment-method">
+                            <input type="radio" name="paymentMethod" value="zalopay" class="mr-3" required>
+                            <div class="flex items-center flex-1">
+                                <i class="fas fa-wallet text-2xl text-blue-600 mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900">Ví điện tử ZaloPay</p>
+                                    <p class="text-xs text-gray-500">Quét mã QR để thanh toán</p>
+                                </div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-500 transition-colors payment-method">
+                            <input type="radio" name="paymentMethod" value="bank_card" class="mr-3" required>
+                            <div class="flex items-center flex-1">
+                                <i class="fas fa-credit-card text-2xl text-indigo-600 mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900">Thẻ ngân hàng</p>
+                                    <p class="text-xs text-gray-500">Visa, Mastercard, JCB</p>
+                                </div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-500 transition-colors payment-method">
+                            <input type="radio" name="paymentMethod" value="cash_at_counter" class="mr-3" required>
+                            <div class="flex items-center flex-1">
+                                <i class="fas fa-money-bill-wave text-2xl text-green-600 mr-3"></i>
+                                <div>
+                                    <p class="font-medium text-gray-900">Thanh toán tại quầy</p>
+                                    <p class="text-xs text-gray-500">Thanh toán khi nhận hàng</p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="qrCodeSection" class="hidden text-center p-6 bg-gray-50 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-3">Quét mã QR bằng ứng dụng thanh toán của bạn</p>
+                    <div class="bg-white p-4 rounded-lg inline-block">
+                        <div id="qrCodePlaceholder" class="w-64 h-64 bg-gray-200 rounded flex items-center justify-center">
+                            <i class="fas fa-qrcode text-6xl text-gray-400"></i>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">Mã QR sẽ hết hạn sau 5 phút</p>
+                </div>
+                
+                <div id="cardDetailsSection" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Số thẻ</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" class="w-full px-4 py-2 border border-gray-300 rounded-lg" maxlength="19">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
+                            <input type="text" id="cardExpiry" placeholder="MM/YY" class="w-full px-4 py-2 border border-gray-300 rounded-lg" maxlength="5">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                            <input type="text" id="cardCVV" placeholder="123" class="w-full px-4 py-2 border border-gray-300 rounded-lg" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" id="submitPaymentBtn" class="flex-1 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                        <i class="fas fa-check mr-2"></i>Xác Nhận Thanh Toán
+                    </button>
+                    <button type="button" onclick="closeModal('paymentModal')" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -196,7 +400,7 @@
                     </div>
                     <p class="text-sm text-gray-600 mb-3">${item.category}</p>
                     <button onclick="addToCart('${item.id}')" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                        <i class="fas fa-plus mr-2"></i>Add to Cart
+                        <i class="fas fa-plus mr-2"></i>Thêm Vào Giỏ
                     </button>
                 </div>
             </div>
@@ -240,10 +444,10 @@
         
         if (cart.length === 0) {
             container.html(`
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-shopping-cart text-4xl mb-2"></i>
-                    <p>Your cart is empty</p>
-                </div>
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                                <p>Giỏ hàng của bạn đang trống</p>
+                            </div>
             `);
             placeOrderBtn.prop('disabled', true);
         } else {
@@ -280,16 +484,47 @@
     }
 
     // Place order
-    $('#placeOrderBtn').on('click', function() {
+    $('#placeOrderBtn').on('click', async function() {
         if (cart.length === 0) return;
         
-        // Simulate order placement
-        cart = [];
-        renderCart();
-        openModal('orderSuccessModal');
+        const btn = $(this);
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Đang xử lý...');
         
-        // Reload order history
-        loadOrderHistory();
+        try {
+            const orderData = {
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
+            };
+            
+            const response = await fetch('/api/customer/create-order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(orderData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Clear cart
+                cart = [];
+                renderCart();
+                openModal('orderSuccessModal');
+                
+                // Reload order history
+                loadOrderHistory();
+            } else {
+                alert('Có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại'));
+                btn.prop('disabled', false).html('<i class="fas fa-check mr-2"></i>Đặt Hàng');
+            }
+        } catch (error) {
+            console.error('Error placing order:', error);
+            alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!');
+            btn.prop('disabled', false).html('<i class="fas fa-check mr-2"></i>Đặt Hàng');
+        }
     });
 
     // Load order history
@@ -300,7 +535,7 @@
             const container = $('#orderHistory');
             
             if (data.orders.length === 0) {
-                container.html('<div class="text-center py-8 text-gray-500">No orders yet</div>');
+                container.html('<div class="text-center py-8 text-gray-500">Chưa có đơn hàng nào</div>');
             } else {
                 container.html(data.orders.map(order => `
                     <div class="border rounded-lg p-4">
@@ -309,23 +544,80 @@
                                 <h3 class="font-bold text-gray-900">${order.id}</h3>
                                 <p class="text-sm text-gray-600">${formatDate(order.date)}</p>
                             </div>
-                            <span class="badge ${order.status === 'completed' ? 'badge-success' : 'badge-warning'}">
-                                ${order.status}
+                            <span class="badge ${order.status === 'completed' ? 'badge-success' : order.status === 'pending' ? 'badge-warning' : 'badge-info'}">
+                                ${order.status === 'completed' ? 'Hoàn thành' : order.status === 'pending' ? 'Chờ xác nhận' : order.status === 'waiting_payment' ? 'Chờ thanh toán' : order.status}
                             </span>
                         </div>
                         <div class="mb-2">
                             <p class="text-sm text-gray-700">${order.items.join(', ')}</p>
                         </div>
                         <div class="flex justify-between items-center pt-2 border-t">
-                            <span class="text-sm font-medium">Total:</span>
+                            <span class="text-sm font-medium">Tổng tiền:</span>
                             <span class="font-bold text-purple-600">${formatCurrency(order.total)}</span>
                         </div>
+                        ${order.status === 'pending' || order.status === 'waiting_payment' ? `
+                            <button onclick="openPaymentModal('${order.id}', ${order.total})" class="w-full mt-3 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700">
+                                <i class="fas fa-credit-card mr-2"></i>Thanh Toán
+                            </button>
+                        ` : ''}
+                    </div>
+                `).join(''));
+            }
+            
+            // Also load pending orders for payment tab
+            loadPendingOrders();
+        } catch (error) {
+            console.error('Error loading orders:', error);
+        }
+    }
+
+    // Load pending orders for payment
+    async function loadPendingOrders() {
+        try {
+            const response = await fetch('/api/orders');
+            const data = await response.json();
+            const container = $('#pendingOrdersList');
+            const pendingOrders = data.orders.filter(o => o.status === 'pending' || o.status === 'waiting_payment');
+            
+            if (pendingOrders.length === 0) {
+                container.html('<div class="text-center py-8 text-gray-500"><i class="fas fa-check-circle text-4xl mb-2 text-green-500"></i><p>Không có đơn hàng nào cần thanh toán</p></div>');
+            } else {
+                container.html(pendingOrders.map(order => `
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-shadow">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-bold text-gray-900">${order.id}</h3>
+                                <p class="text-sm text-gray-600">${formatDate(order.date)}</p>
+                            </div>
+                            <span class="badge badge-warning">Chờ thanh toán</span>
+                        </div>
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-700 font-medium mb-2">Các món đã đặt:</p>
+                            <ul class="list-disc list-inside text-sm text-gray-600">
+                                ${order.items.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t">
+                            <span class="text-lg font-medium">Tổng tiền:</span>
+                            <span class="font-bold text-2xl text-purple-600">${formatCurrency(order.total)}</span>
+                        </div>
+                        <button onclick="openPaymentModal('${order.id}', ${order.total})" class="w-full mt-4 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                            <i class="fas fa-credit-card mr-2"></i>Thanh Toán Ngay
+                        </button>
                     </div>
                 `).join(''));
             }
         } catch (error) {
-            console.error('Error loading orders:', error);
+            console.error('Error loading pending orders:', error);
         }
+    }
+
+    // Open payment modal
+    function openPaymentModal(orderId, amount) {
+        $('#paymentOrderId').val(orderId);
+        $('#paymentAmount').text(formatCurrency(amount));
+        $('#paymentAmountValue').val(amount);
+        openModal('paymentModal');
     }
 
     // Reservation form
@@ -385,10 +677,147 @@
     const today = new Date().toISOString().split('T')[0];
     $('#reservationDate').attr('min', today);
 
+    // Payment form handling
+    $('input[name="paymentMethod"]').on('change', function() {
+        const method = $(this).val();
+        $('#qrCodeSection').addClass('hidden');
+        $('#cardDetailsSection').addClass('hidden');
+        
+        if (method === 'momo' || method === 'zalopay') {
+            $('#qrCodeSection').removeClass('hidden');
+            // In production, generate actual QR code here
+        } else if (method === 'bank_card') {
+            $('#cardDetailsSection').removeClass('hidden');
+        }
+    });
+
+    // Payment form submit
+    $('#paymentForm').on('submit', async function(e) {
+        e.preventDefault();
+        
+        const orderId = $('#paymentOrderId').val();
+        const amount = parseFloat($('#paymentAmountValue').val());
+        const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+        
+        if (!paymentMethod) {
+            alert('Vui lòng chọn phương thức thanh toán');
+            return;
+        }
+        
+        // If cash at counter, just update status
+        if (paymentMethod === 'cash_at_counter') {
+            try {
+                const response = await fetch('/api/process-payment', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        paymentMethod: paymentMethod,
+                        amount: amount
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Đơn hàng đã được đặt ở chế độ thanh toán tại quầy. Vui lòng đến quầy để hoàn tất thanh toán.');
+                    closeModal('paymentModal');
+                    loadOrderHistory();
+                    loadPendingOrders();
+                }
+            } catch (error) {
+                alert('Có lỗi xảy ra. Vui lòng thử lại!');
+            }
+            return;
+        }
+        
+        // For online payment methods, simulate payment process
+        $('#submitPaymentBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Đang xử lý...');
+        
+        // Simulate payment processing
+        setTimeout(async () => {
+            try {
+                const response = await fetch('/api/process-payment', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        orderId: orderId,
+                        paymentMethod: paymentMethod,
+                        amount: amount
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Thanh toán thành công! Cảm ơn bạn đã sử dụng dịch vụ.');
+                    closeModal('paymentModal');
+                    loadOrderHistory();
+                    loadPendingOrders();
+                } else {
+                    alert('Thanh toán thất bại: ' + (data.message || 'Vui lòng thử lại'));
+                    $('#submitPaymentBtn').prop('disabled', false).html('<i class="fas fa-check mr-2"></i>Xác Nhận Thanh Toán');
+                }
+            } catch (error) {
+                alert('Có lỗi xảy ra. Vui lòng thử lại!');
+                $('#submitPaymentBtn').prop('disabled', false).html('<i class="fas fa-check mr-2"></i>Xác Nhận Thanh Toán');
+            }
+        }, 2000);
+    });
+
     // Initialize
     $(document).ready(function() {
         loadMenuItems();
         loadOrderHistory();
+        
+        // Update payment modal when opened
+        $('#paymentModal').on('shown', function() {
+            const orderId = $('#paymentOrderId').val();
+            $('#paymentOrderIdDisplay').text(orderId);
+        });
+    });
+
+    // Star rating functionality
+    $('.star-rating').on('click', function() {
+        const type = $(this).data('type');
+        const value = $(this).data('value');
+        $( `.star-rating[data-type="${type}"]`).each(function() {
+            const starValue = $(this).data('value');
+            if (starValue <= value) {
+                $(this).find('i').removeClass('text-gray-300').addClass('text-yellow-400');
+            } else {
+                $(this).find('i').removeClass('text-yellow-400').addClass('text-gray-300');
+            }
+        });
+        $(`#${type}Rating`).val(value);
+    });
+
+    // Feedback form submit
+    $('#feedbackForm').on('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        try {
+            const response = await fetch('/api/submit-feedback', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message);
+                this.reset();
+                // Reset star ratings
+                $('.star-rating i').removeClass('text-yellow-400').addClass('text-gray-300');
+                $('#foodRating').val('');
+                $('#serviceRating').val('');
+            } else {
+                alert('Có lỗi xảy ra. Vui lòng thử lại!');
+            }
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+            alert('Có lỗi xảy ra. Vui lòng thử lại!');
+        }
     });
 </script>
 {% endblock %}
