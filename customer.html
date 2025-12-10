@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Dashboard - Coffee Shop{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-purple-600 p-2 rounded-lg">
+                    <i class="fas fa-coffee text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-purple-900">Coffee Shop</h1>
+                    <p class="text-sm text-gray-600">Welcome, {{ user.name }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="badge badge-purple">
+                    <i class="fas fa-user mr-1"></i> Customer
+                </span>
+                <a href="/logout" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="grid grid-cols-3 border-b">
+                <button class="tab-button tab-active px-6 py-4 text-sm font-medium" data-tab="menu-tab" onclick="showTab('menu-tab')">
+                    <i class="fas fa-utensils mr-2"></i>Menu & Order
+                </button>
+                <button class="tab-button px-6 py-4 text-sm font-medium" data-tab="reservations-tab" onclick="showTab('reservations-tab')">
+                    <i class="fas fa-calendar mr-2"></i>Reservations
+                </button>
+                <button class="tab-button px-6 py-4 text-sm font-medium" data-tab="history-tab" onclick="showTab('history-tab')">
+                    <i class="fas fa-history mr-2"></i>Order History
+                </button>
+            </div>
+        </div>
+
+        <!-- Menu & Order Tab -->
+        <div id="menu-tab" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Menu Items -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-900">Our Menu</h2>
+                            <select id="categoryFilter" class="px-4 py-2 border border-gray-300 rounded-lg">
+                                <option value="all">All Categories</option>
+                                <option value="Hot Coffee">Hot Coffee</option>
+                                <option value="Cold Coffee">Cold Coffee</option>
+                                <option value="Pastries">Pastries</option>
+                            </select>
+                        </div>
+                        <div id="menuItems" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Menu items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cart -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow p-6 sticky top-24">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Your Order</h3>
+                        <div id="cartItems" class="space-y-3 mb-4 max-h-96 overflow-y-auto">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                                <p>Your cart is empty</p>
+                            </div>
+                        </div>
+                        <div class="border-t pt-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="font-bold text-lg">Total:</span>
+                                <span id="cartTotal" class="font-bold text-2xl text-purple-600">$0.00</span>
+                            </div>
+                            <button id="placeOrderBtn" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                Place Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservations Tab -->
+        <div id="reservations-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Table Reservation</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <form id="reservationForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                <input type="date" id="reservationDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                                <input type="time" id="reservationTime" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Number of Guests</label>
+                                <select id="reservationGuests" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600">
+                                    <option value="1">1 Guest</option>
+                                    <option value="2">2 Guests</option>
+                                    <option value="3">3 Guests</option>
+                                    <option value="4">4 Guests</option>
+                                    <option value="5">5 Guests</option>
+                                    <option value="6">6 Guests</option>
+                                    <option value="7">7 Guests</option>
+                                    <option value="8">8+ Guests</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Special Requests</label>
+                                <textarea id="reservationNotes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600" placeholder="Any special requests?"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                                Reserve Table
+                            </button>
+                        </form>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Your Reservations</h3>
+                        <div id="reservationsList" class="space-y-3">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-calendar-alt text-4xl mb-2"></i>
+                                <p>No reservations yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order History Tab -->
+        <div id="history-tab" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Order History</h2>
+                <div id="orderHistory" class="space-y-4">
+                    <!-- Order history will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Order Success Modal -->
+<div id="orderSuccessModal" class="modal">
+    <div class="modal-content text-center">
+        <div class="text-green-600 mb-4">
+            <i class="fas fa-check-circle text-6xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">Order Placed Successfully!</h3>
+        <p class="text-gray-600 mb-6">Your order has been received and is being prepared.</p>
+        <button onclick="closeModal('orderSuccessModal')" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
+            Continue Shopping
+        </button>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+    let menuItems = [];
+    let reservations = [];
+
+    // Load menu items
+    async function loadMenuItems() {
+        try {
+            const response = await fetch('/api/menu-items');
+            const data = await response.json();
+            menuItems = data.items;
+            renderMenuItems();
+        } catch (error) {
+            console.error('Error loading menu:', error);
+        }
+    }
+
+    function renderMenuItems(category = 'all') {
+        const container = $('#menuItems');
+        const filtered = category === 'all' ? menuItems : menuItems.filter(item => item.category === category);
+        
+        container.html(filtered.map(item => `
+            <div class="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                <img src="${item.image}" alt="${item.name}" class="w-full h-48 object-cover">
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-gray-900">${item.name}</h3>
+                        <span class="text-purple-600 font-bold">$${item.price.toFixed(2)}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${item.category}</p>
+                    <button onclick="addToCart('${item.id}')" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Add to Cart
+                    </button>
+                </div>
+            </div>
+        `).join(''));
+    }
+
+    function addToCart(itemId) {
+        const item = menuItems.find(i => i.id === itemId);
+        if (!item) return;
+        
+        const existingItem = cart.find(c => c.id === itemId);
+        if (existingItem) {
+            existingItem.quantity++;
+        } else {
+            cart.push({ ...item, quantity: 1 });
+        }
+        
+        renderCart();
+    }
+
+    function removeFromCart(itemId) {
+        cart = cart.filter(item => item.id !== itemId);
+        renderCart();
+    }
+
+    function updateQuantity(itemId, change) {
+        const item = cart.find(c => c.id === itemId);
+        if (item) {
+            item.quantity += change;
+            if (item.quantity <= 0) {
+                removeFromCart(itemId);
+            } else {
+                renderCart();
+            }
+        }
+    }
+
+    function renderCart() {
+        const container = $('#cartItems');
+        const placeOrderBtn = $('#placeOrderBtn');
+        
+        if (cart.length === 0) {
+            container.html(`
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                    <p>Your cart is empty</p>
+                </div>
+            `);
+            placeOrderBtn.prop('disabled', true);
+        } else {
+            container.html(cart.map(item => `
+                <div class="flex items-center gap-3 border-b pb-3">
+                    <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-900">${item.name}</h4>
+                        <p class="text-sm text-gray-600">$${item.price.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="updateQuantity('${item.id}', -1)" class="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300">
+                            <i class="fas fa-minus text-xs"></i>
+                        </button>
+                        <span class="w-8 text-center font-medium">${item.quantity}</span>
+                        <button onclick="updateQuantity('${item.id}', 1)" class="w-8 h-8 bg-gray-200 rounded hover:bg-gray-300">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
+                    </div>
+                    <button onclick="removeFromCart('${item.id}')" class="text-red-600 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join(''));
+            placeOrderBtn.prop('disabled', false);
+        }
+        
+        updateCartTotal();
+    }
+
+    function updateCartTotal() {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        $('#cartTotal').text(formatCurrency(total));
+    }
+
+    // Place order
+    $('#placeOrderBtn').on('click', function() {
+        if (cart.length === 0) return;
+        
+        // Simulate order placement
+        cart = [];
+        renderCart();
+        openModal('orderSuccessModal');
+        
+        // Reload order history
+        loadOrderHistory();
+    });
+
+    // Load order history
+    async function loadOrderHistory() {
+        try {
+            const response = await fetch('/api/orders');
+            const data = await response.json();
+            const container = $('#orderHistory');
+            
+            if (data.orders.length === 0) {
+                container.html('<div class="text-center py-8 text-gray-500">No orders yet</div>');
+            } else {
+                container.html(data.orders.map(order => `
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-bold text-gray-900">${order.id}</h3>
+                                <p class="text-sm text-gray-600">${formatDate(order.date)}</p>
+                            </div>
+                            <span class="badge ${order.status === 'completed' ? 'badge-success' : 'badge-warning'}">
+                                ${order.status}
+                            </span>
+                        </div>
+                        <div class="mb-2">
+                            <p class="text-sm text-gray-700">${order.items.join(', ')}</p>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t">
+                            <span class="text-sm font-medium">Total:</span>
+                            <span class="font-bold text-purple-600">${formatCurrency(order.total)}</span>
+                        </div>
+                    </div>
+                `).join(''));
+            }
+        } catch (error) {
+            console.error('Error loading orders:', error);
+        }
+    }
+
+    // Reservation form
+    $('#reservationForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const reservation = {
+            id: 'RES-' + Date.now(),
+            date: $('#reservationDate').val(),
+            time: $('#reservationTime').val(),
+            guests: $('#reservationGuests').val(),
+            notes: $('#reservationNotes').val(),
+            status: 'confirmed'
+        };
+        
+        reservations.push(reservation);
+        renderReservations();
+        this.reset();
+        
+        alert('Reservation confirmed!');
+    });
+
+    function renderReservations() {
+        const container = $('#reservationsList');
+        
+        if (reservations.length === 0) {
+            container.html(`
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-calendar-alt text-4xl mb-2"></i>
+                    <p>No reservations yet</p>
+                </div>
+            `);
+        } else {
+            container.html(reservations.map(res => `
+                <div class="border rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-gray-900">${res.id}</h4>
+                        <span class="badge badge-success">${res.status}</span>
+                    </div>
+                    <div class="space-y-1 text-sm text-gray-700">
+                        <p><i class="fas fa-calendar mr-2"></i>${formatDate(res.date)}</p>
+                        <p><i class="fas fa-clock mr-2"></i>${res.time}</p>
+                        <p><i class="fas fa-users mr-2"></i>${res.guests} Guests</p>
+                        ${res.notes ? `<p><i class="fas fa-comment mr-2"></i>${res.notes}</p>` : ''}
+                    </div>
+                </div>
+            `).join(''));
+        }
+    }
+
+    // Category filter
+    $('#categoryFilter').on('change', function() {
+        renderMenuItems(this.value);
+    });
+
+    // Set minimum date for reservations to today
+    const today = new Date().toISOString().split('T')[0];
+    $('#reservationDate').attr('min', today);
+
+    // Initialize
+    $(document).ready(function() {
+        loadMenuItems();
+        loadOrderHistory();
+    });
+</script>
+{% endblock %}
